@@ -28,7 +28,6 @@ DIGIT 		[0-9]
 APLHA		[a-zA-Z]
 SIGN 		[+-]
 
-
 %%
 "/*"        {
               int c1      = 0;
@@ -108,6 +107,44 @@ SIGN 		[+-]
 				yTRACE((TOKEN_IVEC4));
 				return TOKEN_IVEC4;
 			}
+
+"lit"		{
+				yTRACE((TOKEN_LIT));
+				return TOKEN_LIT;
+			}
+
+"dp3"		{
+				yTRACE((TOKEN_DP3));
+				return TOKEN_DP3;
+			}
+
+"rsq"		{
+				yTRACE((TOKEN_RSQ));
+				return TOKEN_RSQ;
+			}
+
+(APLHA|"_")(APLHA|DIGIT|"_")* {
+				if (strlen(yytext) > MAX_IDENTIFIER)
+					yERROR("Exceeded MAX IDENTIFIER size");
+				else {
+					yTRACE((TOKEN_IDENTIFIER));
+					return TOKEN_IDENTIFIER;
+				}
+			} 
+
+(SIGN)?(DIGIT)+ {
+
+				if (atoi(yytext) > MAX_INTEGER)
+					yERROR("Exceeded MAX INTEGER size");
+				else {
+					yTRACE((TOKEN_INTEGER_VAL));
+					return TOKEN_INTEGER_VAL;
+				}
+			}
+
+(ALPHA|DIGIT|"_"|) 
+
+
 
 .           { yERROR("Unknown token"); }
 

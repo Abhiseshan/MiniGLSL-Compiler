@@ -24,6 +24,10 @@ int yyline = 1;
 %option noyywrap
 
 WS          [ \t]
+DIGIT 		[0-9]
+APLHA		[a-zA-Z]
+SIGN 		[+-]
+
 
 %%
 "/*"        {
@@ -44,6 +48,66 @@ WS          [ \t]
                   yyline++;
               }
             }
+
+"float"		{
+				yTRACE((TOKEN_FLOAT));
+				return TOKEN_FLOAT;
+			}
+
+"vec2"		{
+				yTRACE((TOKEN_VEC2));
+				return TOKEN_VEC2;
+			}
+
+"vec3"		{
+				yTRACE((TOKEN_VEC3));
+				return TOKEN_VEC3;
+			}
+
+"vec4"		{
+				yTRACE((TOKEN_VEC4));
+				return TOKEN_VEC4;
+			}
+
+"bool"		{
+				yTRACE((TOKEN_BOOL));
+				return TOKEN_BOOL;
+			}
+
+"bvec2"		{
+				yTRACE((TOKEN_BVEC2));
+				return TOKEN_BVEC2;
+			}
+
+"bvec3"		{
+				yTRACE((TOKEN_BVEC3));
+				return TOKEN_BVEC3;
+			}
+
+"bvec4"		{
+				yTRACE((TOKEN_BVEC4));
+				return TOKEN_BVEC4;
+			}
+
+"int"		{
+				yTRACE((TOKEN_INT));
+				return TOKEN_INT;
+			}
+
+"ivec2"		{
+				yTRACE((TOKEN_IVEC2));
+				return TOKEN_IVEC2;
+			}
+
+"ivec3"		{
+				yTRACE((TOKEN_IVEC3));
+				return TOKEN_IVEC3;
+			}
+
+"ivec4"		{
+				yTRACE((TOKEN_IVEC4));
+				return TOKEN_IVEC4;
+			}
 
 .           { yERROR("Unknown token"); }
 

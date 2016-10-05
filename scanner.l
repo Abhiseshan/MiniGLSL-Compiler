@@ -123,6 +123,124 @@ SIGN 		[+-]
 				return TOKEN_RSQ;
 			}
 
+/* new */
+
+"if"		{
+				yTRACE((TOKEN_IF));
+				return TOKEN_IF;
+			}
+
+"else"		{
+				yTRACE((TOKEN_ELSE));
+				return TOKEN_ELSE;
+			}
+
+"while"		{
+				yTRACE((TOKEN_WHILE));
+				return TOKEN_WHILE;
+			}
+
+"true"		{
+				yTRACE((TOKEN_TRUE));
+				return TOKEN_TRUE;
+			}
+
+"false"		{
+				yTRACE((TOKEN_FALSE));
+				return TOKEN_FALSE;
+			}
+
+"+"			{
+				yTRACE((TOKEN_PLUS));
+				return TOKEN_PLUS;
+			}
+
+"-"			{
+				yTRACE((TOKEN_MINUS));
+				return TOKEN_MINUS;
+			}
+
+"*"			{
+				yTRACE((TOKEN_MUL));
+				return TOKEN_MUL;
+			}
+
+"/"			{
+				yTRACE((TOKEN_DIV));
+				return TOKEN_DIV;
+			}
+
+"^"			{
+				yTRACE((TOKEN_EXP));
+				return TOKEN_EXP;
+			}
+
+"!"			{
+				yTRACE((TOKEN_NOT));
+				return TOKEN_NOT;
+			}
+
+"&&"		{
+				yTRACE((TOKEN_AND));
+				return TOKEN_AND;
+			}
+
+"||"		{
+				yTRACE((TOKEN_OR));
+				return TOKEN_OR;
+			}
+
+"=="		{
+				yTRACE((TOKEN_EQUAL));
+				return TOKEN_EQUAL;
+			}
+
+"!="		{
+				yTRACE((TOKEN_NOT_EQUAL));
+				return TOKEN_NOT_EQUAL;
+			}
+
+"<"		{
+				yTRACE((TOKEN_LTHAN));
+				return TOKEN_LTHAN;
+			}
+
+"<="		{
+				yTRACE((TOKEN_LTHAN_EQUAL));
+				return TOKEN_LTHAN_EQUAL;
+			}
+
+">"		{
+				yTRACE((TOKEN_GTHAN));
+				return TOKEN_;
+			}
+
+">="		{
+				yTRACE((TOKEN_GTHAN_EQUAL));
+				return TOKEN_GTHAN_EQUAL;
+			}
+
+"const"		{
+				yTRACE((TOKEN_CONST));
+				return TOKEN_CONST;
+			}
+
+""		{
+				yTRACE((TOKEN_));
+				return TOKEN_;
+			}
+
+""		{
+				yTRACE((TOKEN_));
+				return TOKEN_;
+			}
+
+""		{
+				yTRACE((TOKEN_));
+				return TOKEN_;
+			}
+
+
 (APLHA|"_")(APLHA|DIGIT|"_")* {
 				if (strlen(yytext) > MAX_IDENTIFIER)
 					yERROR("Exceeded MAX IDENTIFIER size");

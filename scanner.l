@@ -27,6 +27,7 @@ WS          [ \t]
 DIGIT 		[0-9]
 APLHA		[a-zA-Z]
 SIGN 		[+-]
+INTEGER 	(SIGN)?(0|([1-9]DIGIT*)) 
 
 %%
 "/*"        {
@@ -122,8 +123,6 @@ SIGN 		[+-]
 				yTRACE((TOKEN_RSQ));
 				return TOKEN_RSQ;
 			}
-
-/* new */
 
 "if"		{
 				yTRACE((TOKEN_IF));
@@ -248,10 +247,9 @@ SIGN 		[+-]
 					yTRACE((TOKEN_IDENTIFIER));
 					return TOKEN_IDENTIFIER;
 				}
-			} 
+			}
 
-(SIGN)?(DIGIT)+ {
-
+INTEGER 	{
 				if (atoi(yytext) > MAX_INTEGER)
 					yERROR("Exceeded MAX INTEGER size");
 				else {
@@ -260,9 +258,10 @@ SIGN 		[+-]
 				}
 			}
 
-(ALPHA|DIGIT|"_"|) 
-
-
+INTEGER.DIGIT*[E SIGN DIGIT+] {
+					yTRACE((TOKEN_FLOAT_VAL));
+					return TOKEN_FLOAT_VAL;
+			}
 
 .           { yERROR("Unknown token"); }
 

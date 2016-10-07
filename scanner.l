@@ -199,7 +199,7 @@ INTEGER 	(SIGN)?(0|([1-9]DIGIT*))
 				return TOKEN_NOT_EQUAL;
 			}
 
-"<"		{
+"<"			{
 				yTRACE((TOKEN_LTHAN));
 				return TOKEN_LTHAN;
 			}
@@ -209,9 +209,9 @@ INTEGER 	(SIGN)?(0|([1-9]DIGIT*))
 				return TOKEN_LTHAN_EQUAL;
 			}
 
-">"		{
+">"			{
 				yTRACE((TOKEN_GTHAN));
-				return TOKEN_;
+				return TOKEN_GTHAN;
 			}
 
 ">="		{
@@ -224,25 +224,11 @@ INTEGER 	(SIGN)?(0|([1-9]DIGIT*))
 				return TOKEN_CONST;
 			}
 
-""		{
-				yTRACE((TOKEN_));
-				return TOKEN_;
-			}
-
-""		{
-				yTRACE((TOKEN_));
-				return TOKEN_;
-			}
-
-""		{
-				yTRACE((TOKEN_));
-				return TOKEN_;
-			}
-
 
 (APLHA|"_")(APLHA|DIGIT|"_")* {
-				if (strlen(yytext) > MAX_IDENTIFIER)
+				if (strlen(yytext) > MAX_IDENTIFIER) {
 					yERROR("Exceeded MAX IDENTIFIER size");
+				}
 				else {
 					yTRACE((TOKEN_IDENTIFIER));
 					return TOKEN_IDENTIFIER;
@@ -250,8 +236,9 @@ INTEGER 	(SIGN)?(0|([1-9]DIGIT*))
 			}
 
 INTEGER 	{
-				if (atoi(yytext) > MAX_INTEGER)
+				if (atoi(yytext) > MAX_INTEGER) {
 					yERROR("Exceeded MAX INTEGER size");
+				}
 				else {
 					yTRACE((TOKEN_INTEGER_VAL));
 					return TOKEN_INTEGER_VAL;

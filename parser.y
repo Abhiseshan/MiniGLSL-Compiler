@@ -24,7 +24,7 @@
 #define YYERROR_VERBOSE
 #define yTRACE(x)    { if (traceParser) fprintf(traceFile, "%s\n", x); }
 
-void yyerror(char* s);    /* what to do in case of error            */
+void yyerror(const char* s);    /* what to do in case of error            */
 int yylex();              /* procedure for calling lexical analyzer */
 extern int yyline;        /* variable holding current line number   */
 
@@ -58,7 +58,7 @@ extern int yyline;        /* variable holding current line number   */
   int num;
 }
 // TODO:Replace myToken with your tokens, you can use these tokens in flex
-%token TOKEN_BOOL, TOKEN_BVEC2, TOKEN_BVEC3, TOKEN_BVEC4, TOKEN_INT, TOKEN_IVEC2, TOKEN_IVEC3, TOKEN_IVEC4, TOKEN_FLOAT, TOKEN_VEC2, TOKEN_VEC3, TOKEN_VEC4, TOKEN_VARIABLE, TOKEN_INTEGER_VAL, TOKEN_IDENTIFIER, TOKEN_LIT, TOKEN_RSQ, TOKEN_DP3, TOKEN_IF, TOKEN_ELSE, TOKEN_WHILE, TOKEN_TRUE, TOKEN_FALSE, TOKEN_PLUS, TOKEN_MINUS, TOKEN_MUL, TOKEN_DIV, TOKEN_EXP, TOKEN_NOT, TOKEN_AND, TOKEN_OR, TOKEN_EQUAL, TOKEN_NOT_EQUAL, TOKEN_LTHAN, TOKEN_LTHAN_EQUAL, TOKEN_GTHAN, TOKEN_GTHAN_EQUAL, TOKEN_CONST, TOKEN_FLOAT_VAL
+%token TOKEN_BOOL TOKEN_BVEC2 TOKEN_BVEC3 TOKEN_BVEC4 TOKEN_INT TOKEN_IVEC2 TOKEN_IVEC3 TOKEN_IVEC4 TOKEN_FLOAT TOKEN_VEC2 TOKEN_VEC3 TOKEN_VEC4 TOKEN_VARIABLE TOKEN_INTEGER_VAL TOKEN_IDENTIFIER TOKEN_LIT TOKEN_RSQ TOKEN_DP3 TOKEN_IF TOKEN_ELSE TOKEN_WHILE TOKEN_TRUE TOKEN_FALSE TOKEN_PLUS TOKEN_MINUS TOKEN_MUL TOKEN_DIV TOKEN_EXP TOKEN_NOT TOKEN_AND TOKEN_OR TOKEN_EQUAL TOKEN_NOT_EQUAL TOKEN_LTHAN TOKEN_LTHAN_EQUAL TOKEN_GTHAN TOKEN_GTHAN_EQUAL TOKEN_CONST TOKEN_FLOAT_VAL
 
 %start    program
 
@@ -82,8 +82,8 @@ tokens
   ;
 // TODO: replace myToken with the token the you defined.
 token
-  :     myToken1 
-  |     myToken2                     
+  :      
+                      
   ;
 
 
@@ -95,7 +95,7 @@ token
  * The given yyerror function should not be touched. You may add helper
  * functions as necessary in subsequent phases.
  ***********************************************************************/
-void yyerror(char* s) {
+void yyerror(const char* s) {
   if (errorOccurred)
     return;    /* Error has already been reported by scanner */
   else

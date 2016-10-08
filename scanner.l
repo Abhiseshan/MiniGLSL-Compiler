@@ -189,6 +189,11 @@ INTEGER 	(SIGN)?(0|([1-9]DIGIT*))
 				return TOKEN_OR;
 			}
 
+"="			{
+				yTRACE((TOKEN_ASSIGN));
+				return TOKEN_ASSIGN;
+			}
+
 "=="		{
 				yTRACE((TOKEN_EQUAL));
 				return TOKEN_EQUAL;
@@ -224,6 +229,51 @@ INTEGER 	(SIGN)?(0|([1-9]DIGIT*))
 				return TOKEN_CONST;
 			}
 
+"void"		{
+				yTRACE((TOKEN_VOID));
+				return TOKEN_VOID;
+			}
+
+";"			{
+				yTRACE((TOKEN_EOL));
+				return TOKEN_EOL;
+			}
+
+"{"			{
+				yTRACE((TOKEN_OPEN_SB));
+				return TOKEN_OPEN_SB;
+			}
+
+"}"			{
+				yTRACE((TOKEN_CLOSE_SB));
+				return TOKEN_CLOSE_SB;
+			}
+
+"("			{
+				yTRACE((TOKEN_OPEN_CB));
+				return TOKEN_OPEN_CB;
+			}
+
+")"			{
+				yTRACE((TOKEN_CLOSE_CB));
+				return TOKEN_CLOSE_CB;
+			}
+
+"["			{
+				yTRACE((TOKEN_OPEN_SQB));
+				return TOKEN_OPEN_SQB;
+			}
+
+"]"			{
+				yTRACE((TOKEN_CLOSE_SQB));
+				return TOKEN_CLOSE_SQB;
+			}			
+
+"\n"		{
+				yyline++;
+				yTRACE((TOKEN_NEW_LINE));
+				return TOKEN_NEW_LINE;
+			}
 
 (APLHA|"_")(APLHA|DIGIT|"_")* {
 				if (strlen(yytext) > MAX_IDENTIFIER) {

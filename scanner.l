@@ -273,6 +273,9 @@ INTEGER 	(SIGN)?(0|([1-9]DIGIT*))
 				yyline++;
 			}
 
+{WS}+ 		{
+			}
+
 (APLHA|"_")(APLHA|DIGIT|"_")* {
 				if (strlen(yytext) > MAX_IDENTIFIER) {
 					yERROR("Exceeded MAX IDENTIFIER size");

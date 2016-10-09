@@ -82,7 +82,54 @@ tokens
   ;
 // TODO: replace myToken with the token the you defined.
 	token
-  :         
+  :      TOKEN_BOOL  
+  |      TOKEN_BVEC2
+  |      TOKEN_BVEC3
+  |      TOKEN_BVEC4
+  |      TOKEN_INT
+  |      TOKEN_IVEC3
+  |      TOKEN_IVEC2
+  |      TOKEN_IVEC4
+  |      TOKEN_VEC2
+  |      TOKEN_FLOAT
+  |      TOKEN_VEC4
+  |      TOKEN_VEC3
+  |      TOKEN_IDENTIFIER
+  |      TOKEN_INTEGER_VAL
+  |      TOKEN_LIT
+  |      TOKEN_VARIABLE
+  |      TOKEN_RSQ
+  |      TOKEN_DP3
+  |      TOKEN_WHILE
+  |      TOKEN_ELSE
+  |      TOKEN_TRUE
+  |      TOKEN_IF
+  |      TOKEN_FALSE
+  |      TOKEN_PLUS
+  |      TOKEN_MINUS
+  |      TOKEN_DIV
+  |      TOKEN_MUL
+  |      TOKEN_EXP
+  |      TOKEN_NOT
+  |      TOKEN_OR
+  |      TOKEN_AND
+  |      TOKEN_EQUAL
+  |      TOKEN_NOT_EQUAL
+  |      TOKEN_LTHAN
+  |      TOKEN_LTHAN_EQUAL
+  |      TOKEN_GTHAN
+  |      TOKEN_GTHAN_EQUAL
+  |      TOKEN_CONST
+  |      TOKEN_FLOAT_VAL
+  |      TOKEN_ASSIGN
+  |      TOKEN_EOL
+  |      TOKEN_VOID
+  |      TOKEN_OPEN_SB
+  |      TOKEN_CLOSE_SB
+  |      TOKEN_OPEN_CB
+  |      TOKEN_CLOSE_CB
+  |      TOKEN_CLOSE_SQB
+  |      TOKEN_OPEN_SQB
   ;
 
 

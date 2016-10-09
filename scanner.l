@@ -27,7 +27,7 @@ WS          [ \t]
 DIGIT 		[0-9]
 APLHA		[a-zA-Z]
 SIGN 		[+-]
-INTEGER 	(SIGN)?(0|([1-9]DIGIT*)) 
+INTEGER 	SIGN?(0|([1-9]DIGIT*)) 
 
 %%
 "/*"        {
@@ -276,7 +276,7 @@ INTEGER 	(SIGN)?(0|([1-9]DIGIT*))
 {WS}+ 		{
 			}
 
-(APLHA|"_")(APLHA|DIGIT|"_")* {
+[a-zA-Z_][a-zA-Z_DIGIT]* {
 				if (strlen(yytext) > MAX_IDENTIFIER) {
 					yERROR("Exceeded MAX IDENTIFIER size");
 				}
@@ -286,7 +286,7 @@ INTEGER 	(SIGN)?(0|([1-9]DIGIT*))
 				}
 			}
 
-INTEGER 	{
+[+-]?(0|([1-9][0-9]*)) 	{
 				if (atoi(yytext) > MAX_INTEGER) {
 					yERROR("Exceeded MAX INTEGER size");
 				}
@@ -296,7 +296,7 @@ INTEGER 	{
 				}
 			}
 
-INTEGER.DIGIT*[E SIGN DIGIT+] {
+[+-]?(0|([1-9][0-9]*)).[0-9]*[E[+-][0-9]+] {
 					yTRACE((TOKEN_FLOAT_VAL));
 					return TOKEN_FLOAT_VAL;
 			}

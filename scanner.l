@@ -292,7 +292,8 @@ INTEGER 	SIGN?(0|([1-9]DIGIT*))
 			}
 
 [+-]?(0|([1-9][0-9]*)) 	{
-				if (atoi(yytext) > MAX_INTEGER) {
+				int yyval = atoi(yytext);
+				if (yyval > MAX_INTEGER || yyval < 0) {
 					yERROR("Exceeded MAX INTEGER size");
 				}
 				else {

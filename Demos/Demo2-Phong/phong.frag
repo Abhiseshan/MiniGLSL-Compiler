@@ -19,7 +19,6 @@
    shade = shade + coeff[1] * fCol;
    shade = shade + coeff[2] * fCol;
    gl_FragColor = shade;
-   111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 }
 
 

@@ -292,7 +292,8 @@ INTEGER 	SIGN?(0|([1-9]DIGIT*))
 			}
 
 [+-]?(0|([1-9][0-9]*)) 	{
-				int yyval = atoi(yytext);
+				char* pEnd;
+				long yyval = strtol(yytext, &pEnd, 10);
 				if (yyval > MAX_INTEGER || strlen(yytext) > 10) {
 					yERROR("Exceeded MAX INTEGER size");
 				}

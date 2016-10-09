@@ -239,6 +239,11 @@ INTEGER 	SIGN?(0|([1-9]DIGIT*))
 				return TOKEN_EOL;
 			}
 
+","			{
+				yTRACE((TOKEN_COMMA));
+				return TOKEN_COMMA;
+			}
+
 "{"			{
 				yTRACE((TOKEN_OPEN_SB));
 				return TOKEN_OPEN_SB;
@@ -296,9 +301,9 @@ INTEGER 	SIGN?(0|([1-9]DIGIT*))
 				}
 			}
 
-[+-]?(0|([1-9][0-9]*)).[0-9]*[E[+-][0-9]+] {
+[+-]?(0|([1-9][0-9]*)).[0-9]+ {
 					yTRACE((TOKEN_FLOAT_VAL));
-					return TOKEN_FLOAT_VAL;
+					return TOKEN_FLOAT_VAL; 
 			}
 
 .           { yERROR("Unknown token"); }

@@ -92,7 +92,8 @@ extern int yydebug;
     TOKEN_OPEN_CB = 302,
     TOKEN_CLOSE_CB = 303,
     TOKEN_OPEN_SQB = 304,
-    TOKEN_CLOSE_SQB = 305
+    TOKEN_CLOSE_SQB = 305,
+    TOKEN_COMMA = 306
   };
 #endif
 /* Tokens.  */
@@ -144,6 +145,7 @@ extern int yydebug;
 #define TOKEN_CLOSE_CB 303
 #define TOKEN_OPEN_SQB 304
 #define TOKEN_CLOSE_SQB 305
+#define TOKEN_COMMA 306
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -154,7 +156,7 @@ union YYSTYPE
 
   int num;
 
-#line 158 "y.tab.h" /* yacc.c:1909  */
+#line 160 "y.tab.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

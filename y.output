@@ -48,7 +48,6 @@ Terminals unused in grammar
    TOKEN_CLOSE_CB
    TOKEN_OPEN_SQB
    TOKEN_CLOSE_SQB
-   TOKEN_NEW_LINE
 
 
 Rules useless in parser due to conflicts
@@ -123,18 +122,17 @@ TOKEN_OPEN_CB (302)
 TOKEN_CLOSE_CB (303)
 TOKEN_OPEN_SQB (304)
 TOKEN_CLOSE_SQB (305)
-TOKEN_NEW_LINE (306)
 
 
 Nonterminals, with rules where they appear
 
-$accept (52)
+$accept (51)
     on left: 0
-program (53)
+program (52)
     on left: 1, on right: 0
-tokens (54)
+tokens (53)
     on left: 2 3, on right: 1 2
-token (55)
+token (54)
     on left: 4, on right: 2
 
 

@@ -179,8 +179,7 @@ extern int yydebug;
     TOKEN_OPEN_CB = 302,
     TOKEN_CLOSE_CB = 303,
     TOKEN_OPEN_SQB = 304,
-    TOKEN_CLOSE_SQB = 305,
-    TOKEN_NEW_LINE = 306
+    TOKEN_CLOSE_SQB = 305
   };
 #endif
 /* Tokens.  */
@@ -232,7 +231,6 @@ extern int yydebug;
 #define TOKEN_CLOSE_CB 303
 #define TOKEN_OPEN_SQB 304
 #define TOKEN_CLOSE_SQB 305
-#define TOKEN_NEW_LINE 306
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -243,7 +241,7 @@ union YYSTYPE
 
   int num;
 
-#line 247 "y.tab.c" /* yacc.c:355  */
+#line 245 "y.tab.c" /* yacc.c:355  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
@@ -258,7 +256,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 262 "y.tab.c" /* yacc.c:358  */
+#line 260 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -503,7 +501,7 @@ union yyalloc
 #define YYLAST   0
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  52
+#define YYNTOKENS  51
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  4
 /* YYNRULES -- Number of rules.  */
@@ -514,7 +512,7 @@ union yyalloc
 /* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
    by yylex, with out-of-bounds checking.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   306
+#define YYMAXUTOK   305
 
 #define YYTRANSLATE(YYX)                                                \
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -553,7 +551,7 @@ static const yytype_uint8 yytranslate[] =
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
       35,    36,    37,    38,    39,    40,    41,    42,    43,    44,
-      45,    46,    47,    48,    49,    50,    51
+      45,    46,    47,    48,    49,    50
 };
 
 #if YYDEBUG
@@ -580,8 +578,7 @@ static const char *const yytname[] =
   "TOKEN_GTHAN", "TOKEN_GTHAN_EQUAL", "TOKEN_CONST", "TOKEN_FLOAT_VAL",
   "TOKEN_ASSIGN", "TOKEN_VOID", "TOKEN_EOL", "TOKEN_OPEN_SB",
   "TOKEN_CLOSE_SB", "TOKEN_OPEN_CB", "TOKEN_CLOSE_CB", "TOKEN_OPEN_SQB",
-  "TOKEN_CLOSE_SQB", "TOKEN_NEW_LINE", "$accept", "program", "tokens",
-  "token", YY_NULLPTR
+  "TOKEN_CLOSE_SQB", "$accept", "program", "tokens", "token", YY_NULLPTR
 };
 #endif
 
@@ -595,7 +592,7 @@ static const yytype_uint16 yytoknum[] =
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
      285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
      295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
-     305,   306
+     305
 };
 # endif
 
@@ -653,13 +650,13 @@ static const yytype_uint8 yycheck[] =
      symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,    53,    54,     0,    55
+       0,    52,    53,     0,    54
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    52,    53,    54,    54,    55
+       0,    51,    52,    53,    53,    54
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
@@ -1342,7 +1339,7 @@ yyreduce:
   switch (yyn)
     {
       
-#line 1346 "y.tab.c" /* yacc.c:1646  */
+#line 1343 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

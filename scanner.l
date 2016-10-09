@@ -271,8 +271,6 @@ INTEGER 	(SIGN)?(0|([1-9]DIGIT*))
 
 "\n"		{
 				yyline++;
-				yTRACE((TOKEN_NEW_LINE));
-				return TOKEN_NEW_LINE;
 			}
 
 (APLHA|"_")(APLHA|DIGIT|"_")* {

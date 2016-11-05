@@ -148,7 +148,19 @@ arguments_opt
   : /* empty */     {yTRACE("arguments_opt -> EMPTY\n");} 
   | arguments       {yTRACE("arguments_opt -> arguments\n");} 
   ; 
-  
+variable
+  : ID {yTRACE("variable -> ID\n");}
+  ;
+unary_op
+  : '!'|'-' {yTRACE("unary_op -> '!'|'-'\n");}
+  ;
+binary_op
+  : '&&'|'||'|'=='|'!='|'<'|'<=' {yTRACE("binary_op -> '&&'|'||'|'=='|'!='|'<'|'<='\n");}
+  | '>'|'>='|'+'|'-'|'*'|'/'|'^' {yTRACE("binary_op -> '>'|'>='|'+'|'-'|'*'|'/'|'^'\n");}
+  ;
+constructor
+  : type'('arguments')' {yTRACE("constructor -> type'('arguments')'\n");}
+  ;
 tokens
   :  tokens token  
   |

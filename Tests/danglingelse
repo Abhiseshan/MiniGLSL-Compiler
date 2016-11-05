@@ -1,0 +1,13 @@
+{
+   if(true){int a;
+   }
+   if(false){ bool b;
+   }
+   else if(true) { float c;
+   }
+   else { int e;
+	}
+}
+
+
+

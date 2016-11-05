@@ -1,59 +1,7 @@
-Nonterminals useless in grammar
-
-   tokens
-   token
-
-
 Terminals unused in grammar
 
    '|'
    '&'
-
-
-Rules useless in grammar
-
-   58 tokens: tokens token
-   59       | %empty
-
-   60 token: ID
-   61      | AND
-   62      | OR
-   63      | NEQ
-   64      | LEQ
-   65      | GEQ
-   66      | EQ
-   67      | TRUE_C
-   68      | FALSE_C
-   69      | INT_C
-   70      | FLOAT_C
-   71      | CONST
-   72      | ELSE
-   73      | IF
-   74      | WHILE
-   75      | FLOAT_T
-   76      | INT_T
-   77      | BOOL_T
-   78      | VEC_T
-   79      | IVEC_T
-   80      | BVEC_T
-   81      | FUNC
-   82      | '+'
-   83      | '-'
-   84      | '*'
-   85      | '/'
-   86      | '^'
-   87      | '!'
-   88      | '='
-   89      | '<'
-   90      | '>'
-   91      | ','
-   92      | ';'
-   93      | '('
-   94      | ')'
-   95      | '['
-   96      | ']'
-   97      | '{'
-   98      | '}'
 
 
 Rules useless in parser due to conflicts

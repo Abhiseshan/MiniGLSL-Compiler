@@ -110,18 +110,18 @@ scope
   : '{' declarations statements'}' {yTRACE("scope -> declarations statements\n");} 
   ;
 declarations
-  : declarations declaration  {yTRACE("declarations -> declarations declaration\n");} 
-  | /* empty */ {yTRACE("declarations -> EMPTY\n");}
+  : declarations declaration  	{yTRACE("declarations -> declarations declaration\n");} 
+  | /* empty */ 				{yTRACE("declarations -> EMPTY\n");}
   ;
 statements
   : statements statement  {yTRACE("statements -> statements statement\n");} 
   | /* empty */           {yTRACE("statements -> EMPTY\n");}
   ;
 declaration
-  : type ID ';'  {yTRACE("declaration -> type ID ';'\n");} 
-  | type ID '=' expression ';' {yTRACE("declaration -> type ID '=' expression ';'\n");}
-  | CONST type ID '=' expression ';' {yTRACE("declaration -> CONST type ID '=' expression ';'\n");}
-  | /* empty */ {yTRACE("declaration -> EMPTY\n");}
+  : type ID ';'  						{yTRACE("declaration -> type ID ';'\n");} 
+  | type ID '=' expression ';' 			{yTRACE("declaration -> type ID '=' expression ';'\n");}
+  | CONST type ID '=' expression ';' 	{yTRACE("declaration -> CONST type ID '=' expression ';'\n");}
+  | /* empty */ 						{yTRACE("declaration -> EMPTY\n");}
   ;
 statement
   : variable '=' expression ';'  {yTRACE("statement -> variable '=' expression ';'\n");} 
@@ -149,7 +149,7 @@ expression
   | FLOAT_C                           {yTRACE("expression -> FLOAT_C\n");}
   | variable                          {yTRACE("expression -> variable\n");}
   | unary_op expression               {yTRACE("expression -> unary_op expression\n");}
-  | expression binary_op expression   {yTRACE("expression -> expression binary_op expression\n");}
+  | expression binary_op expression   {yTRACE("expression -> $1 binary_op $3\n");}
   | TRUE_C                            {yTRACE("expression -> TRUE_C\n");}
   | FALSE_C                           {yTRACE("expression -> FALSE_C\n");}
   | '(' expression ')'                {yTRACE("expression -> '(' expression ')'\n");}
@@ -193,51 +193,6 @@ arguments_opt
 arguments
   : expression {yTRACE("arguments -> expression\n");}
   | arguments','expression  {yTRACE("arguments -> arguments','expression\n");} 
-  ;
-tokens
-  :  tokens token  
-  |
-  ;
-token
-  : ID 
-  | AND
-  | OR
-  | NEQ
-  | LEQ
-  | GEQ
-  | EQ
-  | TRUE_C
-  | FALSE_C
-  | INT_C
-  | FLOAT_C
-  | CONST
-  | ELSE
-  | IF
-  | WHILE
-  | FLOAT_T
-  | INT_T
-  | BOOL_T
-  | VEC_T
-  | IVEC_T
-  | BVEC_T
-  | FUNC               
-  | '+'
-  | '-'
-  | '*'
-  | '/'
-  | '^'  
-  | '!'
-  | '='
-  | '<'
-  | '>'   
-  | ','
-  | ';'
-  | '('
-  | ')'
-  | '['
-  | ']'
-  | '{'
-  | '}'                                    
   ;
 
 

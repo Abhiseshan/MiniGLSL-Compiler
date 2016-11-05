@@ -1556,7 +1556,7 @@ yyreduce:
 
   case 31:
 #line 152 "parser.y" /* yacc.c:1646  */
-    {yTRACE("expression -> expression binary_op expression\n");}
+    {yTRACE("expression -> $1 binary_op $3\n");}
 #line 1561 "y.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1951,7 +1951,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 244 "parser.y" /* yacc.c:1906  */
+#line 199 "parser.y" /* yacc.c:1906  */
 
 
 /***********************************************************************ol

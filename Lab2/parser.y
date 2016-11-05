@@ -89,6 +89,7 @@ enum {
 %left     '*' '/'
 %right    '^'
 %nonassoc '!' UMINUS
+%left     '(' '['
 
 %nonassoc ELSE
 
@@ -148,8 +149,21 @@ expression
   | INT_C                             {yTRACE("expression -> INT_C\n");}
   | FLOAT_C                           {yTRACE("expression -> FLOAT_C\n");}
   | variable                          {yTRACE("expression -> variable\n");}
-  | unary_op expression               {yTRACE("expression -> unary_op expression\n");}
-  | expression binary_op expression   {yTRACE("expression -> $1 binary_op $3\n");}
+  | expression AND expression   {yTRACE("expression -> expression '&&' expression\n");}
+  | expression OR expression   {yTRACE("expression -> expression '||' expression \n");}
+  | expression EQ expression   {yTRACE("expression -> expression '==' expression\n");}
+  | expression NEQ expression   {yTRACE("expression -> expression '!=' expression\n");}
+  | expression '<' expression   {yTRACE("expression -> expression '<' expression\n");}
+  | expression LEQ expression   {yTRACE("expression -> expression '<=' expression\n");}
+  | expression '>' expression   {yTRACE("expression -> expression '>' expression\n");}
+  | expression GEQ expression   {yTRACE("expression -> expression '>=' expression\n");}
+  | expression '+' expression   {yTRACE("expression -> expression '+' expression\n");}
+  | expression '-' expression   {yTRACE("expression -> expression '+' expression\n");}
+  | expression '*' expression   {yTRACE("expression -> expression '*' expression\n");}
+  | expression '/' expression   {yTRACE("expression -> expression '/' expression\n");}
+  | expression '^' expression   {yTRACE("expression -> expression '^' expression\n");}
+  | '!' expression               {yTRACE("expression -> '!' expression \n");}
+  | '-' expression %prec UMINUS  {yTRACE("expression -> '-' expression \n");}
   | TRUE_C                            {yTRACE("expression -> TRUE_C\n");}
   | FALSE_C                           {yTRACE("expression -> FALSE_C\n");}
   | '(' expression ')'                {yTRACE("expression -> '(' expression ')'\n");}
@@ -158,25 +172,8 @@ variable
   : ID {yTRACE("variable -> ID\n");}
   | ID '['INT_C']' {yTRACE("variable -> ID '['INT_C']'\n");}
   ;
-unary_op
-  : '!' {yTRACE("unary_op -> '!'\n");}
-  | UMINUS {yTRACE("unary_op -> '-'\n");}
-  ;
-binary_op
-  : AND {yTRACE("binary_op -> '&&'\n");}
-  | OR {yTRACE("binary_op -> '||'\n");}
-  | EQ {yTRACE("binary_op -> '=='\n");}
-  | NEQ {yTRACE("binary_op -> '!='\n");}
-  | '<'  {yTRACE("binary_op -> '<'\n");}
-  | LEQ {yTRACE("binary_op -> '<='\n");}
-  | '>' {yTRACE("binary_op -> '>'\n");}
-  | GEQ {yTRACE("binary_op -> '>='\n");}
-  | '+'  {yTRACE("binary_op -> '+'\n");}
-  | '-'  {yTRACE("binary_op -> '-'\n");}
-  | '*'  {yTRACE("binary_op -> '*'\n");}
-  | '/'  {yTRACE("binary_op -> '/'\n");}
-  | '^' {yTRACE("binary_op -> '^'\n");}
-  ;
+
+
 constructor
   : type'('arguments')' {yTRACE("constructor -> type'('arguments')'\n");}
   ;

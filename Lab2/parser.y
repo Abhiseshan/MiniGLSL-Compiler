@@ -102,7 +102,14 @@ enum {
  *    2. Implement the trace parser option of the compiler
  ***********************************************************************/
 program
-  :   tokens       
+  :   scope {yTRACE("program -> scope\n");}       
+  ;
+scope
+  : '{' declarations statements'}' {yTRACE("scope -> declarations statements\n");} 
+  ;
+declarations
+  : /* empty */ {yTRACE("declarations -> \n");}
+  | declarations declaration  {yTRACE("declarations -> declarations declaration\n");} 
   ;
 tokens
   :  tokens token  

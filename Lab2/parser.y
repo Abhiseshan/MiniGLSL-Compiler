@@ -24,7 +24,7 @@
 #define YYERROR_VERBOSE
 #define yTRACE(x)    { if (traceParser) fprintf(traceFile, "%s\n", x); }
 
-void yyerror(char* s);    /* what to do in case of error            */
+void yyerror(const char* s);    /* what to do in case of error            */
 int yylex();              /* procedure for calling lexical analyzer */
 extern int yyline;        /* variable holding current line number   */
 
@@ -123,7 +123,7 @@ declaration
   | CONST ID '=' expression ';' {yTRACE("declaration -> CONST ID '=' expression ';'\n");}
   | /* empty */ {yTRACE("declaration -> EMPTY\n");}
   ;
-satement
+statement
   : variable '=' expression ';'  {yTRACE("statement -> variable '=' expression ';'\n");} 
   | IF '(' expression ')' statement else_statement {yTRACE("statement -> IF '(' expression ')' statement else_statement\n");}
   | WHILE '(' expression ')' statement {yTRACE("statement -> WHILE '(' expression ')' statement\n");}
@@ -158,11 +158,23 @@ variable
   : ID {yTRACE("variable -> ID\n");}
   ;
 unary_op
-  : '!'|'-' {yTRACE("unary_op -> '!'|'-'\n");}
+  : '!' {yTRACE("unary_op -> '!'\n");}
+  | UMINUS {yTRACE("unary_op -> '-'\n");}
   ;
 binary_op
-  : '&&'|'||'|'=='|'!='|'<'|'<=' {yTRACE("binary_op -> '&&'|'||'|'=='|'!='|'<'|'<='\n");}
-  | '>'|'>='|'+'|'-'|'*'|'/'|'^' {yTRACE("binary_op -> '>'|'>='|'+'|'-'|'*'|'/'|'^'\n");}
+  : AND {yTRACE("binary_op -> '&&'\n");}
+  | OR {yTRACE("binary_op -> '||'\n");}
+  | EQ {yTRACE("binary_op -> '=='\n");}
+  | NEQ {yTRACE("binary_op -> '!='\n");}
+  | '<'  {yTRACE("binary_op -> '<'\n");}
+  | LEQ {yTRACE("binary_op -> '<='\n");}
+  | '>' {yTRACE("binary_op -> '>'\n");}
+  | GEQ {yTRACE("binary_op -> '>='\n");}
+  | '+'  {yTRACE("binary_op -> '+'\n");}
+  | '-'  {yTRACE("binary_op -> '-'\n");}
+  | '*'  {yTRACE("binary_op -> '*'\n");}
+  | '/'  {yTRACE("binary_op -> '/'\n");}
+  | '^' {yTRACE("binary_op -> '^'\n");}
   ;
 constructor
   : type'('arguments')' {yTRACE("constructor -> type'('arguments')'\n");}
@@ -237,7 +249,7 @@ token
  * The given yyerror function should not be touched. You may add helper
  * functions as necessary in subsequent phases.
  ***********************************************************************/
-void yyerror(char* s) {
+void yyerror(const char* s) {
   if(errorOccurred) {
     return;    /* Error has already been reported by scanner */
   } else {

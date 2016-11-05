@@ -1,0 +1,6 @@
+{
+  /* Should fail because an expression expression is assigned an identifier*/
+  int variable;
+  1 + 2 = variable;
+
+}

@@ -1,0 +1,5 @@
+{
+  /* Should fail due to lack of ';' at the end of statement */
+  int x
+
+}

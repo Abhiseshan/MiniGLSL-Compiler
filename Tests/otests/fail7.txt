@@ -1,0 +1,6 @@
+{
+  /*Must fail because I did not enclose the expression x < 5 within brackets*/
+  int x = 2;
+  if x < 5
+    x = 1;
+}

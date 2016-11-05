@@ -1,0 +1,4 @@
+{
+  /*Precedence check*/
+  int x = -1 * 4 ^ 2 / 9;
+}

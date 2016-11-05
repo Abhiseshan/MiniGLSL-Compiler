@@ -1,0 +1,6 @@
+{
+  /* Must fail because I put the unary operator '!' after an expression instead of before*/
+  int i;
+  i * 2! ;
+
+}

@@ -1,0 +1,5 @@
+/* Should fail because code is written outside program scope */
+int x = 5
+{
+
+}

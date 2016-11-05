@@ -1,0 +1,4 @@
+{
+  /* Must fail because I skipped the '=' when assigning a value to the indentifier x*/
+  int x 1234;
+}

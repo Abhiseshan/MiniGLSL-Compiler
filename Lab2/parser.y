@@ -71,7 +71,7 @@ enum {
 %token          CONST
 %token          FALSE_C TRUE_C
 %token          FUNC
-%token          IF WHILE ELSE
+%token          IF WHILE 
 %token          AND OR NEQ EQ LEQ GEQ
 
 // links specific values of tokens to yyval
@@ -89,6 +89,8 @@ enum {
 %left     '*' '/'
 %right    '^'
 %nonassoc '!' UMINUS
+
+%nonassoc ELSE
 
 %start    program
 
@@ -108,9 +110,45 @@ scope
   : '{' declarations statements'}' {yTRACE("scope -> declarations statements\n");} 
   ;
 declarations
-  : /* empty */ {yTRACE("declarations -> \n");}
+  : /* empty */ {yTRACE("declarations -> EMPTY\n");}
   | declarations declaration  {yTRACE("declarations -> declarations declaration\n");} 
   ;
+statements
+  : /* empty */           {yTRACE("statements -> EMPTY\n");}
+  | statements statement  {yTRACE("statements -> statements statement\n");} 
+  ;
+else_statement
+  : /* empty */       {yTRACE("else_statement -> EMPTY\n");}
+  | 'else' statement  {yTRACE("else_statement -> else statement\n");}
+  ;
+type
+  : INT_T     {yTRACE("type -> INT\n");}
+  | BOOL_T    {yTRACE("type -> BOOL\n");}
+  | FLOAT_T   {yTRACE("type -> FLOAT\n");}
+  | VEC_T     {yTRACE("type -> INT VECTOR\n");}
+  | BVEC_T    {yTRACE("type -> BOOL VECTOR\n");}
+  | IVEC_T    {yTRACE("type -> FLOAT VECTOR\n");}
+  ;
+expression
+  : constructor                       {yTRACE("expression -> constructor\n");}
+  | function                          {yTRACE("expression -> function\n");}
+  | INT_C                             {yTRACE("expression -> INT_C\n");}
+  | FLOAT_C                           {yTRACE("expression -> FLOAT_C\n");}
+  | variable                          {yTRACE("expression -> variable\n");}
+  | unary_op expression               {yTRACE("expression -> unary_op expression\n");}
+  | expression binary_op expression   {yTRACE("expression -> expression binary_op expression\n");}
+  | TRUE_C                            {yTRACE("expression -> TRUE_C\n");}
+  | FALSE_C                           {yTRACE("expression -> FALSE_C\n");}
+  | '(' expression ')'                {yTRACE("expression -> '(' expression ')'\n");}
+  ;
+function
+  : function_name '(' arguments_opt ')' {yTRACE("function -> function_name '(' arguments_opt ')'\n");}
+  ;
+arguments_opt
+  : /* empty */     {yTRACE("arguments_opt -> EMPTY\n");} 
+  | arguments       {yTRACE("arguments_opt -> arguments\n");} 
+  ; 
+  
 tokens
   :  tokens token  
   |

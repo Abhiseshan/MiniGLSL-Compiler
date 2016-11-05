@@ -110,17 +110,17 @@ scope
   : '{' declarations statements'}' {yTRACE("scope -> declarations statements\n");} 
   ;
 declarations
-  : /* empty */ {yTRACE("declarations -> EMPTY\n");}
-  | declarations declaration  {yTRACE("declarations -> declarations declaration\n");} 
+  : declarations declaration  {yTRACE("declarations -> declarations declaration\n");} 
+  | /* empty */ {yTRACE("declarations -> EMPTY\n");}
   ;
 statements
-  : /* empty */           {yTRACE("statements -> EMPTY\n");}
-  | statements statement  {yTRACE("statements -> statements statement\n");} 
+  : statements statement  {yTRACE("statements -> statements statement\n");} 
+  | /* empty */           {yTRACE("statements -> EMPTY\n");}
   ;
 declaration
-  : ID ';'  {yTRACE("declaration -> ID ';'\n");} 
-  | ID '=' expression ';' {yTRACE("declaration -> ID '=' expression ';'\n");}
-  | CONST ID '=' expression ';' {yTRACE("declaration -> CONST ID '=' expression ';'\n");}
+  : type ID ';'  {yTRACE("declaration -> type ID ';'\n");} 
+  | type ID '=' expression ';' {yTRACE("declaration -> type ID '=' expression ';'\n");}
+  | CONST type ID '=' expression ';' {yTRACE("declaration -> CONST type ID '=' expression ';'\n");}
   | /* empty */ {yTRACE("declaration -> EMPTY\n");}
   ;
 statement
@@ -131,8 +131,8 @@ statement
   | ';' {yTRACE("statement -> ';'\n");}
   ;
 else_statement
-  : /* empty */       {yTRACE("else_statement -> EMPTY\n");}
-  | 'else' statement  {yTRACE("else_statement -> else statement\n");}
+  : ELSE statement  {yTRACE("else_statement -> else statement\n");}
+  | /* empty */       {yTRACE("else_statement -> EMPTY\n");} 
   ;
 type
   : INT_T     {yTRACE("type -> INT\n");}
@@ -156,6 +156,7 @@ expression
   ;
 variable
   : ID {yTRACE("variable -> ID\n");}
+  | ID '['INT_C']' {yTRACE("variable -> ID '['INT_C']'\n");}
   ;
 unary_op
   : '!' {yTRACE("unary_op -> '!'\n");}
@@ -190,10 +191,9 @@ arguments_opt
   | arguments       {yTRACE("arguments_opt -> arguments\n");} 
   ; 
 arguments
-  : arguments ',' expression  {yTRACE("arguments -> arguments ',' expression\n");} 
-  | expression {yTRACE("arguments -> expression\n");}
+  : expression {yTRACE("arguments -> expression\n");}
+  | arguments','expression  {yTRACE("arguments -> arguments','expression\n");} 
   ;
-
 tokens
   :  tokens token  
   |

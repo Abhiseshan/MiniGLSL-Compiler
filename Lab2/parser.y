@@ -111,6 +111,27 @@ declarations
   : /* empty */ {yTRACE("declarations -> \n");}
   | declarations declaration  {yTRACE("declarations -> declarations declaration\n");} 
   ;
+declaration
+  : ID ';'  {yTRACE("declaration -> ID ';'\n");} 
+  | ID '=' expression ';' {yTRACE("declaration -> ID '=' expression ';'\n");}
+  | CONST ID '=' expression ';' {yTRACE("declaration -> CONST ID '=' expression ';'\n");}
+  | /* empty */ {yTRACE("declaration -> EMPTY\n");}
+  ;
+satement
+  : variable '=' expression ';'  {yTRACE("statement -> variable '=' expression ';'\n");} 
+  | IF '(' expression ')' statement else_statement {yTRACE("statement -> IF '(' expression ')' statement else_statement\n");}
+  | WHILE '(' expression ')' statement {yTRACE("statement -> WHILE '(' expression ')' statement\n");}
+  | scope {yTRACE("statement -> scope\n");}
+  | ';' {yTRACE("statement -> ';'\n");}
+  ;
+function_name
+  : FUNC {yTRACE("function_name -> FUNC\n");} 
+  ;
+arguments
+  : arguments ',' expression  {yTRACE("arguments -> arguments ',' expression\n");} 
+  | expression {yTRACE("arguments -> expression\n");}
+  ;
+
 tokens
   :  tokens token  
   |

@@ -19,27 +19,30 @@ typedef struct node_ node;
 extern node *ast;
 
 typedef enum {
-  UNKNOWN               = 0,
+  UNKNOWN,
 
-  SCOPE_NODE            = (1 << 0),
+  SCOPE_NODE,
   
-  EXPRESSION_NODE       = (1 << 2),
-  UNARY_EXPRESION_NODE  = (1 << 2) | (1 << 3),
-  BINARY_EXPRESSION_NODE= (1 << 2) | (1 << 4),
-  INT_NODE              = (1 << 2) | (1 << 5), 
-  FLOAT_NODE            = (1 << 2) | (1 << 6),
-  IDENT_NODE            = (1 << 2) | (1 << 7),
-  INDEX_NODE            = (1 << 2) | (1 << 8),
-  FUNCTION_NODE         = (1 << 2) | (1 << 9),
-  CONSTRUCTOR_NODE      = (1 << 2) | (1 << 10),
+  EXPRESSION_NODE,
+  UNARY_EXPRESION_NODE,
+  BINARY_EXPRESSION_NODE,
+  INT_NODE, 
+  FLOAT_NODE,
+  VARIABLE_NODE,
+  ARRAY_INDEX_NODE,
+  FUNCTION_NODE,
+  CONSTRUCTOR_NODE,
+  ARGUMENTS_NODE,
 
-  STATEMENTS_NODE        = (1 << 1),
-  IF_STATEMENT_NODE     = (1 << 1) | (1 << 11),
-  ASSIGNMENT_NODE       = (1 << 1) | (1 << 13),
-  NESTED_SCOPE_NODE     = (1 << 1) | (1 << 14),
+  STATEMENTS_NODE,
+  IF_STATEMENT_NODE,
+  ASSIGNMENT_NODE,
+  NESTED_SCOPE_NODE,
   
-  DECLARATIONS_NODE     = (1 << 14)
-  DECLARATION_NODE      = (1 << 15)
+  DECLARATIONS_NODE,
+  DECLARATION_NODE,
+          
+  TYPE_NODE 
 } node_kind;
 
 typedef enum {
@@ -48,17 +51,11 @@ typedef enum {
     BOOL = 2
 } type_code;
 
-typedef struct type {
-    type_code base;
-    bool isVec;
-    int vecSize;
-    bool isConst;
-} type;
-
 struct node_ {
 
   // an example of tagging each node with a type
   node_kind kind;
+  int line_num;
 
   union {
     struct {
@@ -72,8 +69,9 @@ struct node_ {
     } declarations;
 
     struct {
+      int is_const;
       char *id;
-      type *type;
+      type_node *type;
       node *expression;
     } declaration;
 
@@ -83,9 +81,9 @@ struct node_ {
     } statements;
 
     struct {
-      char *id;
-      type *type;
+      node *var;
       node *expression;
+      char *type_name;  // Assigned during semantic analysis
     } assignment;
 
     struct {
@@ -98,22 +96,16 @@ struct node_ {
   
     struct {
       int op;
-      type *type;
       node *right;
+      char *type_name;  // Assigned during semantic analysis
     } unary;
 
     struct {
       int op;
-      type *type;
       node *left;
       node *right;
+      char *type_name;  // Assigned during semantic analysis
     } binary;
-
-    struct {
-      char *id;
-      type *type;
-      node *index;
-    } index;
 
     struct {
       char *name;
@@ -121,7 +113,7 @@ struct node_ {
     } function;
 
     struct {
-      type *type;
+      type_node *type;
       node *args;
     } constructor;
 
@@ -133,6 +125,20 @@ struct node_ {
       node *args;
       node *expression;
     } arguments;
+    
+    struct {
+        type_code base;
+        int size;   // Used for vectors
+    } type_node;
+    
+    struct {
+        char* id;
+    } variable;
+    
+    struct {
+        char* id;
+        int index;
+    } array_index;
   };
 };
 

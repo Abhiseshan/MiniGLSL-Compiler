@@ -1,7 +1,11 @@
 %{
 /***********************************************************************
- * --YOUR GROUP INFO SHOULD GO HERE--
- * 
+ *   Group: 015
+ *
+ *   Abhinav Rajaseshan - 10001095469
+ *   Pranit Wadkar - 1001142710
+ *   Eric Elmoznino - 1001792599
+ *
  *   Interface to the parser module for CSC467 course project.
  * 
  *   Phase 2: Implement context free grammar for source language, and

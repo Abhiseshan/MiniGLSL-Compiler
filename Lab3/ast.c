@@ -33,7 +33,7 @@ node *ast_allocate(node_kind kind, ...) {
 	  break;
 
   	case DECLARATION_NODE:
-	  ast->declaration.is_const = va_arg(args, int);
+	  ast->declaration.is_const = va_arg(args, bool);
 	  ast->declaration.id = va_arg(args, char *);
 	  ast->declaration.type = va_arg(args, node *);
 	  ast->declaration.expression = va_arg(args, node *); 
@@ -114,3 +114,4 @@ void ast_free(node *ast) {
 void ast_print(node * ast) {
     
 }
+

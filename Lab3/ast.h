@@ -29,18 +29,31 @@ typedef enum {
   INT_NODE              = (1 << 2) | (1 << 5), 
   FLOAT_NODE            = (1 << 2) | (1 << 6),
   IDENT_NODE            = (1 << 2) | (1 << 7),
-  VAR_NODE              = (1 << 2) | (1 << 8),
+  INDEX_NODE            = (1 << 2) | (1 << 8),
   FUNCTION_NODE         = (1 << 2) | (1 << 9),
   CONSTRUCTOR_NODE      = (1 << 2) | (1 << 10),
 
-  STATEMENT_NODE        = (1 << 1),
+  STATEMENTS_NODE        = (1 << 1),
   IF_STATEMENT_NODE     = (1 << 1) | (1 << 11),
-  WHILE_STATEMENT_NODE  = (1 << 1) | (1 << 12),
   ASSIGNMENT_NODE       = (1 << 1) | (1 << 13),
   NESTED_SCOPE_NODE     = (1 << 1) | (1 << 14),
-
+  
+  DECLARATIONS_NODE     = (1 << 14)
   DECLARATION_NODE      = (1 << 15)
 } node_kind;
+
+typedef enum {
+    INT = 0,
+    FLOAT = 1,
+    BOOL = 2
+} type_code;
+
+typedef struct type {
+    type_code base;
+    bool isVec;
+    int vecSize;
+    bool isConst;
+} type;
 
 struct node_ {
 
@@ -49,22 +62,77 @@ struct node_ {
 
   union {
     struct {
-      // declarations?
-      // statements?
+      node *declarations;
+      node *statements;
     } scope;
+
+    struct {
+      node *declarations;
+      node *declaration;
+    } declarations;
+
+    struct {
+      char *id;
+      type *type;
+      node *expression;
+    } declaration;
+
+    struct {
+      node *statements;
+      node *statement;
+    } statements;
+
+    struct {
+      char *id;
+      type *type;
+      node *expression;
+    } assignment;
+
+    struct {
+      node *cond;
+      node *then_statement;
+      node *else_statement;
+    } if_statement;
+    
+    node *nested_scope;
   
     struct {
       int op;
+      type *type;
       node *right;
-    } unary_expr;
+    } unary;
 
     struct {
       int op;
+      type *type;
       node *left;
       node *right;
-    } binary_expr;
+    } binary;
 
-    // etc.
+    struct {
+      char *id;
+      type *type;
+      node *index;
+    } index;
+
+    struct {
+      char *name;
+      node *args;
+    } function;
+
+    struct {
+      type *type;
+      node *args;
+    } constructor;
+
+    int int_val;
+    float float_val;
+    int bool_val;
+
+    struct {
+      node *args;
+      node *expression;
+    } arguments;
   };
 };
 

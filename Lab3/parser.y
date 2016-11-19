@@ -84,6 +84,7 @@ enum {
 %token <as_float> FLOAT_C
 %token <as_int>   INT_C
 %token <as_str>   ID
+%token <as_func>  FUNC
 
 // operator precdence
 %left     OR                        // 7
@@ -112,8 +113,6 @@ enum {
 %type <as_ast> variable
 %type <as_ast> arguments
 %type <as_ast> arguments_opt
-
-%type <as_str> FUNC
 
 // expect one shift/reduce conflict, where Bison chooses to shift
 // the ELSE.

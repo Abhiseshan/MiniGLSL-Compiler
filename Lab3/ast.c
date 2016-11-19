@@ -38,7 +38,7 @@ node *ast_allocate(node_kind kind, ...) {
 	  break;
 
   	case DECLARATION_NODE:
-	  ast->declaration.is_const = va_arg(args, int);
+	  ast->declaration.is_const = va_arg(args, bool);
 	  ast->declaration.id = va_arg(args, char *);
 	  ast->declaration.type_node = va_arg(args, node *);
 	  ast->declaration.expr = va_arg(args, node *); 
@@ -46,7 +46,7 @@ node *ast_allocate(node_kind kind, ...) {
 
   	case ASSIGNMENT_NODE:
 	  ast->assignment.variable = va_arg(args, node *);
-	  ast->assignment.expr = va_arg(args, node *);
+	  ast->assignment.expression = va_arg(args, node *);
 	  break;
 
   	case IF_STATEMENT_NODE:
@@ -140,3 +140,4 @@ void ast_free(node *ast) {
 void ast_print(node * ast) {
 
 }
+

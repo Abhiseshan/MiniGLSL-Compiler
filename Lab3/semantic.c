@@ -352,8 +352,8 @@ int semantic_check( node *ast) {
 				return type;
 			}
 			break;
-		//Array index node?   ARRAY_INDEX_NODE
-		case 14:
+
+		case ARRAY_INDEX_NODE:
 			//printf("ARRAY_NODE %d\n", kind);
 			name = ast->array_exp.identifier;
 			type = getType(name);
@@ -362,60 +362,60 @@ int semantic_check( node *ast) {
 			switch(type){
 			case IVEC2:
 				if(index>=2){
-					printf("ERROR index too high line: %d\n",ast->line_num);
+					printf("Line: %d: error: Index out of bounds",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case IVEC3:
 				if(index>=3){
-					printf("ERROR index too high line: %d\n",ast->line_num);
+					printf("Line: %d: error: Index out of bounds",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case IVEC4:
 				if(index>=4){
-					printf("ERROR index too high line: %d\n",ast->line_num);
+					printf("Line: %d: error: Index out of bounds",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case BVEC2:
 				if(index>=2){
-					printf("ERROR index too high line: %d\n",ast->line_num);
+					printf("Line: %d: error: Index out of bounds",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case BVEC3:
 				if(index>=3){
-					printf("ERROR index too high line: %d\n",ast->ast->line_num);
+					printf("Line: %d: error: Index out of bounds",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case BVEC4:
 				if(index>=4){
-					printf("ERROR index too high line: %d\n",ast->array_exp.line);
+					printf("Line: %d: error: Index out of bounds",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case VEC2:
 				if(index>=2){
-					printf("ERROR index too high line: %d\n",ast->array_exp.line);
+					printf("Line: %d: error: Index out of bounds",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case VEC3:
 				if(index>=3){
-					printf("ERROR index too high line: %d\n",ast->array_exp.line);
+					printf("Line: %d: error: Index out of bounds",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case VEC4:
 				if(index>=4){
-					printf("ERROR index too high line: %d\n",ast->array_exp.line);
+					printf("Line: %d: error: Index out of bounds",ast->line_num);
 					return ERROR;
 				}
 				break;
 			default:
-				printf("ERROR not vec type, only vec types may be indexed line: %d\n",ast->array_exp.line);
+					printf("Line: %d: error: Cannot read index of non vector data types\n",ast->line_num);
 				return ERROR;
 			}
 

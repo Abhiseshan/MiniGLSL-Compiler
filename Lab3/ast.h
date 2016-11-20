@@ -79,9 +79,7 @@ struct node_ {
   int line_num;
 
   union {
-    struct {
-        node *scope;
-    } enter_scope;
+    node *enter_scope;
       
     struct {
       node *declarations;
@@ -99,7 +97,7 @@ struct node_ {
       type_node *type;
       node *expression;
     } declaration;
-
+    
     struct {
       node *statements;
       node *statement;
@@ -133,7 +131,7 @@ struct node_ {
     } binary;
 
     struct {
-      char *name;
+      int *func_code;
       node *args;
     } function;
 
@@ -156,6 +154,8 @@ struct node_ {
         int size;   // Used for vectors
     } type_node;
     
+    node *expression_variable;
+    
     struct {
         char* id;
     } variable;
@@ -163,12 +163,13 @@ struct node_ {
     struct {
         char* id;
         int index;
+        char *type_name;  // Assigned during semantic analysis
     } array_index;
   };
 };
 
 node *ast_allocate(node_kind type, ...);
 void ast_free(node *ast);
-void ast_print(node * ast);
+void ast_print(node * ast, int indentLevel);
 
 #endif /* AST_H_ */

@@ -1,4 +1,3 @@
-
 #include "semantic.h"
 
 int semantic_check( node *ast) {

@@ -49,7 +49,7 @@ typedef enum {
 } node_kind;
 
 typedef enum {
-    INT,
+    INT = 0,
     FLOAT,
     BOOL
 } type_code;
@@ -94,7 +94,7 @@ struct node_ {
     struct {
       int is_const;
       char *id;
-      type_node *type;
+      node *type;
       node *expression;
     } declaration;
     
@@ -131,12 +131,12 @@ struct node_ {
     } binary;
 
     struct {
-      int *func_code;
+      int func_code;
       node *args;
     } function;
 
     struct {
-      type_node *type;
+      node *type;
       node *args;
     } constructor;
 
@@ -155,6 +155,7 @@ struct node_ {
     } type_node;
     
     node *expression_variable;
+    node *nested_expression;
     
     struct {
         char* id;

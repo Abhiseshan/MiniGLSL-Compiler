@@ -22,17 +22,17 @@ node *ast_allocate(node_kind kind, ...) {
 
   switch(kind) {
       
-        case ENTER_SCOPE_NODE:
-          ast->enter_scope = va_arg(args, node *);
-          break;
+    case ENTER_SCOPE_NODE:
+      ast->enter_scope = va_arg(args, node *);
+      break;
 
   	case SCOPE_NODE:
 	  ast->scope.declarations = va_arg(args, node *);
 	  ast->scope.statements = va_arg(args, node *); 
 	  break;
           
-        case NESTED_EXPRESSION_NODE:
-	  ast->nested_expression.expression = va_arg(args, node *);
+    case NESTED_EXPRESSION_NODE:
+	  ast->nested_expression = va_arg(args, node *);
 	  break;
 
   	case DECLARATIONS_NODE:
@@ -41,7 +41,7 @@ node *ast_allocate(node_kind kind, ...) {
 	  break;
 
   	case DECLARATION_NODE:
-	  ast->declaration.is_const = va_arg(args, bool);
+	  ast->declaration.is_const = va_arg(args, int);
 	  ast->declaration.id = va_arg(args, char *);
 	  ast->declaration.type = va_arg(args, node *);
 	  ast->declaration.expression = va_arg(args, node *); 
@@ -94,19 +94,19 @@ node *ast_allocate(node_kind kind, ...) {
 	  break;
 
   	case TYPE_NODE:
-	  ast->type_node.base = va_arg(args, int);
-          ast->type_node.size = va_arg(args, int);
+	  ast->type_node.base = va_arg(args, type_code);
+      ast->type_node.size = va_arg(args, int);
 	  break;
 
   	case VARIABLE_NODE:
 	  ast->variable.id = va_arg(args, char *);
 	  break;
           
-        case EXPRESSION_VARIABLE_NODE:
+    case EXPRESSION_VARIABLE_NODE:
 	  ast->expression_variable = va_arg(args, node *);
 	  break;
           
-        case ARRAY_INDEX_NODE:
+    case ARRAY_INDEX_NODE:
 	  ast->array_index.id = va_arg(args, char *);
 	  ast->array_index.index = va_arg(args, int);
 	  break;
@@ -192,7 +192,7 @@ const char* getFuncString(int funcCode) {
 }
 
 char* appendChar(const char* str, char c) {
-    char* result = malloc(strlen(str)+2);
+    char* result = (char*)malloc(strlen(str)+2);
     strcpy(result, str);
     result[strlen(str)] = c;
     return result;
@@ -235,7 +235,7 @@ void ast_print(node * ast, int indentLevel) {
             printf("\n"); printIndent(indentLevel); printf(")\n");
             break;
         case NESTED_EXPRESSION_NODE:
-            ast_print(ast->nested_expression->expression, indentLevel);
+            ast_print(ast->nested_expression, indentLevel);
             break;
         case DECLARATIONS_NODE:
             printIndent(indentLevel); printf("(DECLARATIONS\n");
@@ -263,27 +263,27 @@ void ast_print(node * ast, int indentLevel) {
             ast_print(ast->if_statement.else_statement, indentLevel + 1);
             printf("\n"); printIndent(indentLevel); printf(")\n");
             break;
-        case NESTED_SCOPE:
+        case NESTED_SCOPE_NODE:
             ast_print(ast->nested_scope, indentLevel);
             break;
-        case UNARY_EXPRESSION_NODE;
+        case UNARY_EXPRESION_NODE:
             printIndent(indentLevel); printf("(UNARY\n");
             printIndent(indentLevel + 1); printf("type placeholder"); printf("\n");
-            printIndent(indentLevel + 1); printf(getOpString(ast->unary.op)); printf("\n");
+            printIndent(indentLevel + 1); printf("%s", getOpString(ast->unary.op)); printf("\n");
             ast_print(ast->unary.right, indentLevel + 1);
             printf("\n"); printIndent(indentLevel); printf(")\n");
             break;
-        case BINARY_EXPRESSION_NODE;
+        case BINARY_EXPRESSION_NODE:
             printIndent(indentLevel); printf("(BINARY\n");
             printIndent(indentLevel + 1); printf("type placeholder"); printf("\n");
-            printIndent(indentLevel + 1); printf(getOpString(ast->binary.op)); printf("\n");
+            printIndent(indentLevel + 1); printf("%s",getOpString(ast->binary.op)); printf("\n");
             ast_print(ast->binary.left, indentLevel + 1);
             ast_print(ast->binary.right, indentLevel + 1);
             printf("\n"); printIndent(indentLevel); printf(")\n");
             break;
         case FUNCTION_NODE:
             printIndent(indentLevel); printf("(CALL\n");
-            printIndent(indentLevel + 1); printf(getFuncString(ast->function.func_code)); printf("\n");
+            printIndent(indentLevel + 1); printf("%s", getFuncString(ast->function.func_code)); printf("\n");
             ast_print(ast->function.args, indentLevel + 1);
             printf("\n"); printIndent(indentLevel); printf(")\n");
             break;
@@ -293,13 +293,13 @@ void ast_print(node * ast, int indentLevel) {
             ast_print(ast->constructor.args, indentLevel + 1);
             printf("\n"); printIndent(indentLevel); printf(")\n");
             break;
-        case INT_NODE;
+        case INT_NODE:
             printIndent(indentLevel); printf("%d\n", ast->int_val);
             break;
-        case BOOL_NODE;
+        case BOOL_NODE:
             printIndent(indentLevel); ast->bool_val ? printf("true\n") : printf("false\n");
             break;
-        case FLOAT_NODE;
+        case FLOAT_NODE:
             printIndent(indentLevel); printf("%f\n", ast->float_val);
             break;
         case ARGUMENTS_NODE:
@@ -307,20 +307,25 @@ void ast_print(node * ast, int indentLevel) {
             ast_print(ast->arguments.expression, indentLevel + 1);
             break;
         case TYPE_NODE:
-            printIndent(indentLevel); printf(getTypeString(ast->type_node.base, ast->type_node.size)); printf("\n");
+            printIndent(indentLevel); printf("%s", getTypeString(ast->type_node.base, ast->type_node.size)); printf("\n");
             break;
         case EXPRESSION_VARIABLE_NODE:
             ast_print(ast->expression_variable, indentLevel);
             break;
         case VARIABLE_NODE:
-            printIndent(indentLevel); printf(ast->variable.id); printf("\n");
+            printIndent(indentLevel); printf("%s", ast->variable.id); printf("\n");
             break;
         case ARRAY_INDEX_NODE:
             printIndent(indentLevel); printf("(INDEX\n");
             printIndent(indentLevel + 1); printf("type placeholder"); printf("\n");
-            printIndent(indentLevel); printf(ast->array_index.id); printf("\n");
-            printIndent(indentLevel); printf(ast->array_index.index); printf("\n");
+            printIndent(indentLevel); printf("%s", ast->array_index.id); printf("\n");
+            printIndent(indentLevel); printf("%d", ast->array_index.index); printf("\n");
             printf("\n"); printIndent(indentLevel); printf(")\n");
+            break;
+        //Humm eric look at these
+        case DECLARATION_NODE:
+            break;
+        case UNKNOWN:
             break;
     }
 }

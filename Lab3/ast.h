@@ -20,15 +20,18 @@ extern node *ast;
 
 typedef enum {
   UNKNOWN,
-
+          
+  ENTER_SCOPE_NODE,
   SCOPE_NODE,
   
-  EXPRESSION_NODE,
+  NESTED_EXPRESSION_NODE,
   UNARY_EXPRESION_NODE,
   BINARY_EXPRESSION_NODE,
   INT_NODE, 
   FLOAT_NODE,
+  BOOL_NODE,
   VARIABLE_NODE,
+  EXPRESSION_VARIABLE_NODE,
   ARRAY_INDEX_NODE,
   FUNCTION_NODE,
   CONSTRUCTOR_NODE,
@@ -46,10 +49,28 @@ typedef enum {
 } node_kind;
 
 typedef enum {
-    INT = 0,
-    FLOAT = 1,
-    BOOL = 2
+    INT,
+    FLOAT,
+    BOOL
 } type_code;
+
+typedef enum {
+    MINUS_OP,
+    NOT_OP,
+    AND_OP,
+    OR_OP,
+    EQ_OP,
+    NEQ_OP,
+    LT_OP,
+    LEQ_OP,
+    GT_OP,
+    GEQ_OP,
+    ADD_OP,
+    SUB_OP,
+    MULT_OP,
+    DIV_OP,
+    POW_OP
+} op_code;
 
 struct node_ {
 
@@ -58,6 +79,10 @@ struct node_ {
   int line_num;
 
   union {
+    struct {
+        node *scope;
+    } enter_scope;
+      
     struct {
       node *declarations;
       node *statements;

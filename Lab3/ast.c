@@ -21,10 +21,18 @@ node *ast_allocate(node_kind kind, ...) {
   va_start(args, kind); 
 
   switch(kind) {
+      
+        case ENTER_SCOPE_NODE:
+          ast->enter_scope.scope = va_arg(args, node *);
+          break;
 
   	case SCOPE_NODE:
 	  ast->scope.declarations = va_arg(args, node *);
 	  ast->scope.statements = va_arg(args, node *); 
+	  break;
+          
+        case NESTED_EXPRESSION_NODE:
+	  ast->nested_expression.expression = va_arg(args, node *);
 	  break;
 
   	case DECLARATIONS_NODE:
@@ -94,14 +102,29 @@ node *ast_allocate(node_kind kind, ...) {
 	  ast->variable.id = va_arg(args, char *);
 	  break;
           
+        case EXPRESSION_VARIABLE_NODE:
+	  ast->expression_variable.var = va_arg(args, node *);
+	  break;
+          
         case ARRAY_INDEX_NODE:
 	  ast->array_index.id = va_arg(args, char *);
 	  ast->array_index.index = va_arg(args, int);
 	  break;
+          
+        case INT_NODE:
+          ast->int_val = va_arg(args, int);
+          break;
+        case BOOL_NODE:
+          ast->bool_val = va_arg(args, int);
+          break;
+        case FLOAT_NODE:
+          ast->float_val = (float)va_arg(args, double);
+          break;
 
   	default: break;
   }
-
+  
+  ast->line_num = va_arg(args, int);
   va_end(args);
 
   return ast;

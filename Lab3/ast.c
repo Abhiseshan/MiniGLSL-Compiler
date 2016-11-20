@@ -183,9 +183,9 @@ const char* getFuncString(int funcCode) {
         case 0:
             return "DP3";
         case 1:
-            return "RSQ";
-        case 2:
             return "LIT";
+        case 2:
+            return "RSQ";
         default:
             return "";
     }
@@ -241,6 +241,13 @@ void ast_print(node * ast, int indentLevel) {
             printIndent(indentLevel); printf("(DECLARATIONS\n");
             ast_print(ast->declarations.declarations, indentLevel + 1);
             ast_print(ast->declarations.declaration, indentLevel + 1);
+            printf("\n"); printIndent(indentLevel); printf(")\n");
+            break;
+        case DECLARATION_NODE:
+            printIndent(indentLevel); printf("(DECLARATION\n");
+            printIndent(indentLevel + 1); printf("%s", ast->declaration.id); printf("\n");
+            ast_print(ast->declaration.type, indentLevel + 1);
+            ast_print(ast->declaration.expression, indentLevel + 1);
             printf("\n"); printIndent(indentLevel); printf(")\n");
             break;
         case STATEMENTS_NODE:
@@ -303,11 +310,11 @@ void ast_print(node * ast, int indentLevel) {
             printIndent(indentLevel); printf("%f\n", ast->float_val);
             break;
         case ARGUMENTS_NODE:
-            ast_print(ast->arguments.args, indentLevel + 1);
-            ast_print(ast->arguments.expression, indentLevel + 1);
+            ast_print(ast->arguments.args, indentLevel);
+            ast_print(ast->arguments.expression, indentLevel);
             break;
         case TYPE_NODE:
-            printIndent(indentLevel); printf("%s", getTypeString(ast->type_node.base, ast->type_node.size)); printf("\n");
+            printIndent(indentLevel); printf("%s\n", getTypeString(ast->type_node.base, ast->type_node.size));
             break;
         case EXPRESSION_VARIABLE_NODE:
             ast_print(ast->expression_variable, indentLevel);
@@ -318,12 +325,9 @@ void ast_print(node * ast, int indentLevel) {
         case ARRAY_INDEX_NODE:
             printIndent(indentLevel); printf("(INDEX\n");
             printIndent(indentLevel + 1); printf("type placeholder"); printf("\n");
-            printIndent(indentLevel); printf("%s", ast->array_index.id); printf("\n");
-            printIndent(indentLevel); printf("%d", ast->array_index.index); printf("\n");
+            printIndent(indentLevel + 1); printf("%s", ast->array_index.id); printf("\n");
+            printIndent(indentLevel + 1); printf("%d", ast->array_index.index);
             printf("\n"); printIndent(indentLevel); printf(")\n");
-            break;
-        //Humm eric look at these
-        case DECLARATION_NODE:
             break;
         case UNKNOWN:
             break;

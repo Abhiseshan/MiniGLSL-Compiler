@@ -202,7 +202,7 @@ type
       { $$ = ast_allocate(TYPE_NODE, BOOL, $1+1, yyline);
         yTRACE("type -> BVEC_T \n") }
   | FLOAT_T
-      { $$ = ast_allocate(TYPE_NODE, FLOAT, yyline);
+      { $$ = ast_allocate(TYPE_NODE, FLOAT, 1, yyline);
         yTRACE("type -> FLOAT_T \n") }
   | VEC_T
       { $$ = ast_allocate(TYPE_NODE, FLOAT, $1+1, yyline);

@@ -194,64 +194,63 @@ int semantic_check(node *ast) {
 				}else if(exp2==BVEC4 && exp1==BVEC4){
 					return BVEC4;
 				}else if(exp2 == INT || exp2 == IVEC2 || exp2 == IVEC3 || exp2 == IVEC4){
-					printf("Line: %d: error: found INT, expecting BOOL\n",ast->line_num);						
+					printf("Line: %d: error: TYPE MISMATCH, found INT, expecting BOOL\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1 == INT || exp1 == IVEC2 || exp1 == IVEC3 || exp1 == IVEC4){
-					printf("Line: %d: error: found INT, expecting BOOL\n",ast->line_num);						
+					printf("Line: %d: error: TYPE MISMATCH, found INT, expecting BOOL\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2 == FLOAT || exp2 == VEC2 || exp2 == VEC3 || exp2 == VEC4){
-					printf("Line: %d: error: found FLOAT, expecting BOOL\n",ast->line_num);						
+					printf("Line: %d: error: TYPE MISMATCH, found FLOAT, expecting BOOL\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1 == FLOAT || exp1 == VEC2 || exp1 == VEC3 || exp1 == VEC4){
-					printf("Line: %d: error: found FLOAT, expecting BOOL\n",ast->line_num);						
+					printf("Line: %d: error: TYPE MISMATCH, found FLOAT, expecting BOOL\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2 != exp1){
-					printf("Line: %d: error: operation can only be performed on vectors of same size\n",ast->line_num);						
+					printf("Line: %d: error: TYPE MISMATCH, operation can only be performed on vectors of same size\n",ast->line_num);						
 					return ERROR;
 				}
-			}
+			}9
 
 			//comparison operators
-
 			if(ast->binary_expr.op==LT_OP ||ast->binary_expr.op==LEQ_OP || ast->binary_expr.op==GT_OP || ast->binary_expr.op==GEQ_OP){
 				if(exp2==INT && exp1==INT){
 					return INT;
 				}else if(exp2==FLOAT && exp1 == FLOAT){
 					return FLOAT;
 				}else if(exp2==BOOL || exp1==BOOL){
-					printf("ERROR BINARY_EXPRESSION_NODE comparison operators should have artimetic operands line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
-				}else if(exp2== IVEC2 || exp2==IVEC3 || exp2==IVEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE operands must be scalars line: %d\n", ast->binary_expr.line);
+				}else if(exp2== IVEC2 || exp2==IVEC3 || exp2==IVEC4){	
+					printf("Line: %d: error: TYPE MISMATCH, found INT VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2== VEC2 || exp2==VEC3 || exp2==VEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE operands must be scalars line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, found FLOAT VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2== BVEC2 || exp2==BVEC3 || exp2==BVEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE operands must be scalars line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, found BOOL VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1== IVEC2 || exp1==IVEC3 || exp1==IVEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE operands must be scalars line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, found INT VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1== VEC2 || exp1==VEC3 || exp1==VEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE operands must be scalars line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, found FLOAT VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1== BVEC2 || exp1==BVEC3 || exp1==BVEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE operands must be scalars line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, found BOOL VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2!=exp1){
-					printf("ERROR BINARY_EXPRESSION_NODE operands should be of same base type line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
 					return ERROR;
 				}
 			}
-			//comparison operators
+
 			if(ast->binary_expr.op==EQ_OP || ast->binary_expr.op==NEQ_OP){
 				if(exp2==exp1){
 					if(exp2==BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
-						printf("ERROR BINARY_EXPRESSION_NODE comparison operators should have artimetic operands line: %d\n", ast->binary_expr.line);
+						printf("Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					}
 				}else{
-					printf("ERROR BINARY_EXPRESSION_NODE operands should be of same base type line: %d\n", ast->binary_expr.line);
+						printf("Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
 					return ERROR;
 				}
 			}

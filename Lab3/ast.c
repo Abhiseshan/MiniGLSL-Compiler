@@ -94,7 +94,7 @@ node *ast_allocate(node_kind kind, ...) {
 	  break;
 
   	case TYPE_NODE:
-	  ast->type_node.base = va_arg(args, type_code);
+	  ast->type_node.base = (type_code) va_arg(args, int); 
       ast->type_node.size = va_arg(args, int);
 	  break;
 
@@ -198,7 +198,7 @@ char* appendChar(const char* str, char c) {
     return result;
 }
 
-char* getTypeString(int base, int size) {
+const char* getTypeString(int base, int size) {
     switch(base) {
         case INT:
             if(size == 1)

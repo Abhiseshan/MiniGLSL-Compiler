@@ -146,7 +146,7 @@ declarations
         yTRACE("declarations -> declarations declaration\n") }
   | 
       { $$ = NULL;
-        yTRACE("declarations -> \n") }
+        yTRACE("declarations -> EMPTY\n") }
   ;
 
 statements
@@ -155,7 +155,7 @@ statements
         yTRACE("statements -> statements statement\n") }
   | 
       { $$ = NULL;
-        yTRACE("statements -> \n") }
+        yTRACE("statements -> EMPTY\n") }
   ;
 
 declaration

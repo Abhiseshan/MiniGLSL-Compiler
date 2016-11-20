@@ -67,7 +67,7 @@ int checkDepth( node *ast) {
 int in_scope=0;
 
 
-int semantic_check( node *ast) {
+int semantic_check(node *ast) {
 
 	if(ast==NULL)
 		fprintf(errorFile,"Semantic function visited a NULL node\n");
@@ -77,7 +77,7 @@ int semantic_check( node *ast) {
 	int type;
 	int depth;
 	int tmp;
-	int right_exp, left_exp;
+	int exp1, exp2;
 	char * name;
 	int index;
 	kind = ast->kind;
@@ -87,40 +87,44 @@ int semantic_check( node *ast) {
 		case ENTER_SCOPE_NODE:
 			in_scope++;
 			//printf("ENTER_SCOPE_NODE %d\n", kind);
-			right_exp = semantic_check(ast->enter_scope.scope);
+			exp1 = semantic_check(ast->enter_scope.scope);
 			in_scope--;
-			return right_exp;
+			return exp1;
 			break;
+
 		case SCOPE_NODE:
 			//printf("SCOPE_NODE %d\n", kind);
-			right_exp = semantic_check(ast->scope.declarations);
-			left_exp = semantic_check(ast->scope.statements);
+			exp1 = semantic_check(ast->scope.declarations);
+			exp2 = semantic_check(ast->scope.statements);
 
-			if(right_exp==ERROR || left_exp == ERROR)
+			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
 			return 0;
 			break;
+
 		case DECLARATIONS_NODE:
 			//printf("DECLARATIONS_NODE %d\n", kind);
-			right_exp = semantic_check(ast->declarations.declarations);
-			left_exp = semantic_check(ast->declarations.declaration);
+			exp1 = semantic_check(ast->declarations.declarations);
+			exp2 = semantic_check(ast->declarations.declaration);
 
-			if(right_exp==ERROR || left_exp == ERROR)
+			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
-			return left_exp;
+			return exp2;
 			break;
+
 		case STATEMENTS_NODE:
 			//printf("STATEMENTS_NODE %d\n", kind);
-			right_exp = semantic_check(ast->statements.statements);
-			left_exp = semantic_check(ast->statements.statement);
+			exp1 = semantic_check(ast->statements.statements);
+			exp2 = semantic_check(ast->statements.statement);
 
-			if(right_exp==ERROR || left_exp == ERROR)
+			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
-			return left_exp;
+			return exp2;
 			break;
+		//Eric is this needed? 
 		case EXPRESSION_NODE:
 			//printf("EXPRESSION_NODE No node %d\n", kind);
 			// No EXPRESSION_NODE
@@ -130,71 +134,79 @@ int semantic_check( node *ast) {
 			//printf("PREN_EXPRESSION_NODE %d\n", kind);
 			return semantic_check(ast->paren_exp.expression);
 			break;
+
 		case UNARY_EXPRESION_NODE:
 			//printf("UNARY_EXPRESION_NODE %d\n", kind);
 			//printf("Operator: %d\n", ast->unary_expr.op);
 
-			right_exp = semantic_check(ast->unary_expr.right);
+			exp1 = semantic_check(ast->unary.right);
 
-			if(right_exp==ERROR)
+			if(exp1==ERROR)
 				return ERROR;
 
-			switch ( ast->unary_expr.op){
-			case MINUS:
-				if(right_exp == BOOL || right_exp==BVEC2|| right_exp==BVEC3|| right_exp==BVEC4){
-					printf("ERROR UNARY_EXPRESION_NODE, operand should be arithmetic line:%d \n", ast->unary_expr.line);
-					return ERROR;
-				}else{
-					return right_exp;
-				}
-				break;
-			case NOT:
-				if(right_exp!=BOOL || right_exp!=BVEC2 || right_exp!=BVEC3 || right_exp!=BVEC4){
-					printf("ERROR UNARY_EXPRESION_NODE, operand to NOT should be logical line: %d\n", ast->unary_expr.line);
-					return ERROR;
+			switch (ast->unary.op){
+				case MINUS_OP:
+					if(exp1 == BOOL || exp1==BVEC2|| exp1==BVEC3|| exp1==BVEC4){
+						printf("Line: %d: error: found BOOL, expecting INT or FLOAT\n",ast->line_num);						
+						eturn ERROR;
+					} else{
+						return exp1;
+					}
+					break;
 
-				}else{
-					return right_exp;
-				}
-				break;
+				case NOT_OP:
+					if(exp1!=BOOL || exp1!=BVEC2 || exp1!=BVEC3 || exp1!=BVEC4){
+						if(exp1 == INT || exp1==IVEC2 || exp1==IVEC3|| exp1==IVEC4){
+							printf("Line: %d: error: found INTEGER, expecting BOOL\n",ast->line_num);						
+						}
+						else if(exp1 == FLOAT || exp1==VEC2 || exp1==VEC3|| exp1==VEC4){
+							printf("Line: %d: error: found FLOAT, expecting BOOL\n",ast->line_num);						
+						}
+						else {
+							printf("Line: %d: error: found UNKNOWN TYPE, expecting BOOL\n",ast->line_num);						
+						}
+						return ERROR;
+
+					} else{
+						return exp1;
+					}
+					break;
 			}
 
 			break;
 		case BINARY_EXPRESSION_NODE:
 			//printf("BINARY_EXPRESSION_NODE %d\n", kind);
 			//printf("Operator: %d\n", ast->binary_expr.op);
-			left_exp = semantic_check(ast->binary_expr.left);
-			right_exp = semantic_check(ast->binary_expr.right);
+			exp2 = semantic_check(ast->binary_expr.left);
+			exp1 = semantic_check(ast->binary_expr.right);
 
-			if(right_exp == ERROR || left_exp == ERROR)
+			if(exp1 == ERROR || exp2 == ERROR)
 				return ERROR;
 
 			//Logical operators
-
 			if(ast->binary_expr.op==AND_OP || ast->binary_expr.op==OR_OP){
-				if(left_exp==BOOL && right_exp==BOOL){
+				if(exp2==BOOL && exp1==BOOL){
 					return BOOL;
-				}else if(left_exp==BVEC2 && right_exp==BVEC2){
+				}else if(exp2==BVEC2 && exp1==BVEC2){
 					return BVEC2;
-				}else if(left_exp==BVEC3 && right_exp==BVEC3){
+				}else if(exp2==BVEC3 && exp1==BVEC3){
 					return BVEC3;
-				}else if(left_exp==BVEC4 && right_exp==BVEC4){
+				}else if(exp2==BVEC4 && exp1==BVEC4){
 					return BVEC4;
-				}else if(left_exp == INT || left_exp == IVEC2 || left_exp == IVEC3 || left_exp == IVEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE logical operators should have boolean operands line: %d\n", ast->binary_expr.line);
+				}else if(exp2 == INT || exp2 == IVEC2 || exp2 == IVEC3 || exp2 == IVEC4){
+					printf("Line: %d: error: found INT, expecting BOOL\n",ast->line_num);						
 					return ERROR;
-				}else if(left_exp == FLOAT || left_exp == VEC2 || left_exp == VEC3 || left_exp == VEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE logical operators should have boolean operands line: %d\n", ast->binary_expr.line);
+				}else if(exp1 == INT || exp1 == IVEC2 || exp1 == IVEC3 || exp1 == IVEC4){
+					printf("Line: %d: error: found INT, expecting BOOL\n",ast->line_num);						
 					return ERROR;
-				}else if(right_exp == FLOAT || right_exp == VEC2 || right_exp == VEC3 || right_exp == VEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE logical operators should have boolean operands line: %d\n", ast->binary_expr.line);
+				}else if(exp2 == FLOAT || exp2 == VEC2 || exp2 == VEC3 || exp2 == VEC4){
+					printf("Line: %d: error: found FLOAT, expecting BOOL\n",ast->line_num);						
 					return ERROR;
-				}else if(right_exp == INT || right_exp == IVEC2 || right_exp == IVEC3 || right_exp == IVEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE logical operators should have boolean operands line: %d\n", ast->binary_expr.line);
+				}else if(exp1 == FLOAT || exp1 == VEC2 || exp1 == VEC3 || exp1 == VEC4){
+					printf("Line: %d: error: found FLOAT, expecting BOOL\n",ast->line_num);						
 					return ERROR;
-				}
-				else if(left_exp != right_exp){
-					printf("ERROR BINARY_EXPRESSION_NODE operands should be of same base type line: %d\n", ast->binary_expr.line);
+				}else if(exp2 != exp1){
+					printf("Line: %d: error: operation can only be performed on vectors of same size\n",ast->line_num);						
 					return ERROR;
 				}
 			}
@@ -202,40 +214,40 @@ int semantic_check( node *ast) {
 			//comparison operators
 
 			if(ast->binary_expr.op==LT_OP ||ast->binary_expr.op==LEQ_OP || ast->binary_expr.op==GT_OP || ast->binary_expr.op==GEQ_OP){
-				if(left_exp==INT && right_exp==INT){
+				if(exp2==INT && exp1==INT){
 					return INT;
-				}else if(left_exp==FLOAT && right_exp == FLOAT){
+				}else if(exp2==FLOAT && exp1 == FLOAT){
 					return FLOAT;
-				}else if(left_exp==BOOL || right_exp==BOOL){
+				}else if(exp2==BOOL || exp1==BOOL){
 					printf("ERROR BINARY_EXPRESSION_NODE comparison operators should have artimetic operands line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(left_exp== IVEC2 || left_exp==IVEC3 || left_exp==IVEC4){
+				}else if(exp2== IVEC2 || exp2==IVEC3 || exp2==IVEC4){
 					printf("ERROR BINARY_EXPRESSION_NODE operands must be scalars line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(left_exp== VEC2 || left_exp==VEC3 || left_exp==VEC4){
+				}else if(exp2== VEC2 || exp2==VEC3 || exp2==VEC4){
 					printf("ERROR BINARY_EXPRESSION_NODE operands must be scalars line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(left_exp== BVEC2 || left_exp==BVEC3 || left_exp==BVEC4){
+				}else if(exp2== BVEC2 || exp2==BVEC3 || exp2==BVEC4){
 					printf("ERROR BINARY_EXPRESSION_NODE operands must be scalars line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(right_exp== IVEC2 || right_exp==IVEC3 || right_exp==IVEC4){
+				}else if(exp1== IVEC2 || exp1==IVEC3 || exp1==IVEC4){
 					printf("ERROR BINARY_EXPRESSION_NODE operands must be scalars line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(right_exp== VEC2 || right_exp==VEC3 || right_exp==VEC4){
+				}else if(exp1== VEC2 || exp1==VEC3 || exp1==VEC4){
 					printf("ERROR BINARY_EXPRESSION_NODE operands must be scalars line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(right_exp== BVEC2 || right_exp==BVEC3 || right_exp==BVEC4){
+				}else if(exp1== BVEC2 || exp1==BVEC3 || exp1==BVEC4){
 					printf("ERROR BINARY_EXPRESSION_NODE operands must be scalars line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(left_exp!=right_exp){
+				}else if(exp2!=exp1){
 					printf("ERROR BINARY_EXPRESSION_NODE operands should be of same base type line: %d\n", ast->binary_expr.line);
 					return ERROR;
 				}
 			}
 			//comparison operators
 			if(ast->binary_expr.op==EQ_OP || ast->binary_expr.op==NEQ_OP){
-				if(left_exp==right_exp){
-					if(left_exp==BOOL || left_exp == BVEC2 || left_exp == BVEC3 || left_exp == BVEC4){
+				if(exp2==exp1){
+					if(exp2==BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
 						printf("ERROR BINARY_EXPRESSION_NODE comparison operators should have artimetic operands line: %d\n", ast->binary_expr.line);
 					}
 				}else{
@@ -246,29 +258,29 @@ int semantic_check( node *ast) {
 
 			//arithmetic operators add and sub
 			if(ast->binary_expr.op==ADD_OP || ast->binary_expr.op==SUB_OP){
-				if(left_exp==INT && right_exp==INT){
+				if(exp2==INT && exp1==INT){
 					return INT;
-				}else if(left_exp==FLOAT && right_exp==FLOAT){
+				}else if(exp2==FLOAT && exp1==FLOAT){
 					return FLOAT;
-				}else if(left_exp==IVEC2 && right_exp==IVEC2){
+				}else if(exp2==IVEC2 && exp1==IVEC2){
 					return IVEC2;
-				}else if(left_exp==IVEC3 && right_exp==IVEC3){
+				}else if(exp2==IVEC3 && exp1==IVEC3){
 					return IVEC3;
-				}else if(left_exp==IVEC4 && right_exp==IVEC4){
+				}else if(exp2==IVEC4 && exp1==IVEC4){
 					return IVEC4;
-				}else if(left_exp==VEC2 && right_exp==VEC2){
+				}else if(exp2==VEC2 && exp1==VEC2){
 					return VEC2;
-				}else if(left_exp==VEC3 && right_exp==VEC3){
+				}else if(exp2==VEC3 && exp1==VEC3){
 					return VEC3;
-				}else if(left_exp==VEC4 && right_exp==VEC4){
+				}else if(exp2==VEC4 && exp1==VEC4){
 					return VEC4;
-				}else if(left_exp==BOOL || left_exp == BVEC2 || left_exp == BVEC3 || left_exp == BVEC4){
+				}else if(exp2==BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
 					printf("ERROR BINARY_EXPRESSION_NODE arithmetic operators should have arithmetic operands line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(right_exp==BOOL || right_exp == BVEC2 || right_exp == BVEC3 || right_exp == BVEC4){
+				}else if(exp1==BOOL || exp1 == BVEC2 || exp1 == BVEC3 || exp1 == BVEC4){
 					printf("ERROR BINARY_EXPRESSION_NODE arithmetic operators should have arithmetic operands line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(left_exp!=right_exp){
+				}else if(exp2!=exp1){
 					printf("ERROR BINARY_EXPRESSION_NODE operands should be of same base type line: %d\n", ast->binary_expr.line);
 					return ERROR;
 				}
@@ -276,23 +288,23 @@ int semantic_check( node *ast) {
 
 			//arithmetic operator mult
 			if(ast->binary_expr.op==MULT_OP){
-				if(left_exp == INT && (right_exp==INT || right_exp==IVEC2 || right_exp==IVEC3 || right_exp==IVEC4)){
-					return right_exp;
-				}else if(right_exp == INT && (left_exp==INT || left_exp==IVEC2 || left_exp==IVEC3 || left_exp==IVEC4)){
-					return left_exp;
-				}else if(left_exp == FLOAT && (right_exp==FLOAT || right_exp==VEC2 || right_exp==VEC3 || right_exp==VEC4)){
-					return right_exp;
-				}else if(right_exp == FLOAT && (left_exp==FLOAT || left_exp==VEC2 || left_exp==VEC3 || left_exp==VEC4)){
-					return left_exp;
-				}else if(left_exp == BOOL || left_exp == BVEC2 || left_exp == BVEC3 || left_exp == BVEC4){
+				if(exp2 == INT && (exp1==INT || exp1==IVEC2 || exp1==IVEC3 || exp1==IVEC4)){
+					return exp1;
+				}else if(exp1 == INT && (exp2==INT || exp2==IVEC2 || exp2==IVEC3 || exp2==IVEC4)){
+					return exp2;
+				}else if(exp2 == FLOAT && (exp1==FLOAT || exp1==VEC2 || exp1==VEC3 || exp1==VEC4)){
+					return exp1;
+				}else if(exp1 == FLOAT && (exp2==FLOAT || exp2==VEC2 || exp2==VEC3 || exp2==VEC4)){
+					return exp2;
+				}else if(exp2 == BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
 					printf("ERROR BINARY_EXPRESSION_NODE arithmetic operators should have arithmetic operands line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(right_exp==BOOL || right_exp == BVEC2 || right_exp == BVEC3 || right_exp == BVEC4){
+				}else if(exp1==BOOL || exp1 == BVEC2 || exp1 == BVEC3 || exp1 == BVEC4){
 					printf("ERROR BINARY_EXPRESSION_NODE arithmetic operators should have arithmetic operands line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(left_exp==right_exp){
-					return left_exp;
-				}else if(left_exp!=right_exp){
+				}else if(exp2==exp1){
+					return exp2;
+				}else if(exp2!=exp1){
 					printf("ERROR BINARY_EXPRESSION_NODE operands should be of same base type line: %d\n", ast->binary_expr.line);
 					return ERROR;
 				}
@@ -300,17 +312,17 @@ int semantic_check( node *ast) {
 
 			//arithmetic operator /,^
 			if(ast->binary_expr.op==DIV_OP || ast->binary_expr.op==POW_OP){
-				if(left_exp==INT && right_exp==INT){
+				if(exp2==INT && exp1==INT){
 					return INT;
-				}else if(left_exp==FLOAT && right_exp==FLOAT){
+				}else if(exp2==FLOAT && exp1==FLOAT){
 					return FLOAT;
-				}else if(left_exp == BOOL || left_exp == BVEC2 || left_exp == BVEC3 || left_exp == BVEC4){
+				}else if(exp2 == BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
 					printf("ERROR BINARY_EXPRESSION_NODE arithmetic operators should have arithmetic operands line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(right_exp==BOOL || right_exp == BVEC2 || right_exp == BVEC3 || right_exp == BVEC4){
+				}else if(exp1==BOOL || exp1 == BVEC2 || exp1 == BVEC3 || exp1 == BVEC4){
 					printf("ERROR BINARY_EXPRESSION_NODE arithmetic operators should have arithmetic operands line: %d\n", ast->binary_expr.line);
 					return ERROR;
-				}else if(left_exp!=right_exp){
+				}else if(exp2!=exp1){
 					printf("ERROR BINARY_EXPRESSION_NODE operands should be of same base type line: %d\n", ast->binary_expr.line);
 					return ERROR;
 				}else{
@@ -362,55 +374,55 @@ int semantic_check( node *ast) {
 			switch(type){
 			case IVEC2:
 				if(index>=2){
-					printf("Line: %d: error: Index out of bounds",ast->line_num);
+					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case IVEC3:
 				if(index>=3){
-					printf("Line: %d: error: Index out of bounds",ast->line_num);
+					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case IVEC4:
 				if(index>=4){
-					printf("Line: %d: error: Index out of bounds",ast->line_num);
+					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case BVEC2:
 				if(index>=2){
-					printf("Line: %d: error: Index out of bounds",ast->line_num);
+					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case BVEC3:
 				if(index>=3){
-					printf("Line: %d: error: Index out of bounds",ast->line_num);
+					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case BVEC4:
 				if(index>=4){
-					printf("Line: %d: error: Index out of bounds",ast->line_num);
+					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case VEC2:
 				if(index>=2){
-					printf("Line: %d: error: Index out of bounds",ast->line_num);
+					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case VEC3:
 				if(index>=3){
-					printf("Line: %d: error: Index out of bounds",ast->line_num);
+					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case VEC4:
 				if(index>=4){
-					printf("Line: %d: error: Index out of bounds",ast->line_num);
+					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
@@ -448,15 +460,15 @@ int semantic_check( node *ast) {
 			break;
 		case CONSTRUCTOR_NODE:
 			//printf("CONSTRUCTOR_NODE %d\n", kind);
-			left_exp = semantic_check(ast->constructor_exp.type);
-			right_exp = semantic_check(ast->constructor_exp.arguments);
+			exp2 = semantic_check(ast->constructor_exp.type);
+			exp1 = semantic_check(ast->constructor_exp.arguments);
 
-			if(right_exp==ERROR || left_exp == ERROR)
+			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
 			depth = checkDepth(ast->constructor_exp.arguments);
 
-			switch(left_exp){
+			switch(exp2){
 			case IVEC2:
 				if(depth>2){
 					printf("ERROR too many arguments line: %d\n", ast->constructor_exp.line);
@@ -507,29 +519,29 @@ int semantic_check( node *ast) {
 				}
 			}
 
-			if(left_exp==right_exp){
-				return left_exp;
+			if(exp2==exp1){
+				return exp2;
 			}
 
-			if(left_exp==IVEC2 || left_exp==IVEC3 || left_exp==IVEC4){
-				if(right_exp==INT){
+			if(exp2==IVEC2 || exp2==IVEC3 || exp2==IVEC4){
+				if(exp1==INT){
 					return INT;
 				}
 			}
 
-			if(left_exp==BVEC2 || left_exp==BVEC3 || left_exp==BVEC4){
-				if(right_exp==BOOL){
+			if(exp2==BVEC2 || exp2==BVEC3 || exp2==BVEC4){
+				if(exp1==BOOL){
 					return BOOL;
 				}
 			}
 
-			if(left_exp==VEC2 || left_exp==VEC3 || left_exp==VEC4){
-				if(right_exp==FLOAT){
+			if(exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
+				if(exp1==FLOAT){
 					return FLOAT;
 				}
 			}
 
-			if(left_exp!=right_exp){
+			if(exp2!=exp1){
 				printf("ERROR types mismatch line: %d\n", ast->constructor_exp.line);
 				return ERROR;
 			}
@@ -545,12 +557,12 @@ int semantic_check( node *ast) {
 		//Eric this and the next
 		case 18:
 			//printf("IF_ELSE_STATEMENT_NODE %d\n", kind);
-			left_exp = semantic_check(ast->if_else_statement.condition);
+			exp2 = semantic_check(ast->if_else_statement.condition);
 
-			if(left_exp == ERROR)
+			if(exp2 == ERROR)
 				return ERROR;
 
-			if(left_exp!=BOOL){
+			if(exp2!=BOOL){
 				printf("ERROR: Expression must evaluate to bool line: %d\n", ast->if_else_statement.line);
 				return ERROR;
 			}
@@ -559,11 +571,11 @@ int semantic_check( node *ast) {
 			break;
 		case 19:
 			//printf("IF_STATEMENT_NODE %d\n", kind);
-			left_exp = semantic_check(ast->if_else_statement.condition);
-			if(left_exp == ERROR)
+			exp2 = semantic_check(ast->if_else_statement.condition);
+			if(exp2 == ERROR)
 				return ERROR;
 
-			if(left_exp!=BOOL){
+			if(exp2!=BOOL){
 				printf("ERROR: Expression must evaluate to bool line: %d\n", ast->if_else_statement.line);
 				return ERROR;
 			}
@@ -580,10 +592,10 @@ int semantic_check( node *ast) {
 			// set type of symbol in local var
 			name = ast->assignment.left->variable_exp.identifier;
 
-			left_exp = getType(name);
-			right_exp = semantic_check(ast->assignment.right);
+			exp2 = getType(name);
+			exp1 = semantic_check(ast->assignment.right);
 
-			if(right_exp==ERROR || left_exp == ERROR || tmp ==ERROR)
+			if(exp1==ERROR || exp2 == ERROR || tmp ==ERROR)
 				return ERROR;
 
 			if(ast->assignment.left->kind == VAR_NODE){
@@ -603,30 +615,30 @@ int semantic_check( node *ast) {
 				}
 			}
 
-			if(left_exp==right_exp){
-				return left_exp;
+			if(exp2==exp1){
+				return exp2;
 			}
 
-			if(left_exp==IVEC2 || left_exp==IVEC3 || left_exp==IVEC4){
-				if(right_exp==INT){
+			if(exp2==IVEC2 || exp2==IVEC3 || exp2==IVEC4){
+				if(exp1==INT){
 					return INT;
 				}
 			}
 
-			if(left_exp==BVEC2 || left_exp==BVEC3 || left_exp==BVEC4){
-				if(right_exp==BOOL){
+			if(exp2==BVEC2 || exp2==BVEC3 || exp2==BVEC4){
+				if(exp1==BOOL){
 					return BOOL;
 				}
 			}
 
-			if(left_exp==VEC2 || left_exp==VEC3 || left_exp==VEC4){
-				if(right_exp==FLOAT){
+			if(exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
+				if(exp1==FLOAT){
 					return FLOAT;
 				}
 			}
 
 
-			if(left_exp!=right_exp){
+			if(exp2!=exp1){
 				printf("ERROR ASSIGNMENT_NODE must be of same type line: %d \n",ast->assignment.line);
 				return ERROR;
 			}
@@ -650,10 +662,10 @@ int semantic_check( node *ast) {
 		//Eric Assignemnt node? 
 		case 24:
 			//printf("DECLARATION_ASSIGNMENT_NODE %d\n", kind);
-			left_exp = semantic_check(ast->declaration_assignment.type);
-			right_exp = semantic_check(ast->declaration_assignment.value);
+			exp2 = semantic_check(ast->declaration_assignment.type);
+			exp1 = semantic_check(ast->declaration_assignment.value);
 
-			if(right_exp==ERROR || left_exp == ERROR)
+			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
 			isDecl=checkExists(ast->declaration_assignment.iden,in_scope, ast->declaration_assignment.line);
@@ -680,35 +692,35 @@ int semantic_check( node *ast) {
 				}
 			}
 
-			if(left_exp==right_exp){
-				return left_exp;
+			if(exp2==exp1){
+				return exp2;
 			}
 
-			if(left_exp==IVEC2 || left_exp==IVEC3 || left_exp==IVEC4){
-				if(right_exp==INT){
+			if(exp2==IVEC2 || exp2==IVEC3 || exp2==IVEC4){
+				if(exp1==INT){
 					return INT;
 				}
 			}
 
-			if(left_exp==BVEC2 || left_exp==BVEC3 || left_exp==BVEC4){
-				if(right_exp==BOOL){
+			if(exp2==BVEC2 || exp2==BVEC3 || exp2==BVEC4){
+				if(exp1==BOOL){
 					return BOOL;
 				}
 			}
 
-			if(left_exp==VEC2 || left_exp==VEC3 || left_exp==VEC4){
-				if(right_exp==FLOAT){
+			if(exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
+				if(exp1==FLOAT){
 					return FLOAT;
 				}
 			}
 
 
-			if(left_exp!=right_exp){
+			if(exp2!=exp1){
 				printf("ERROR ASSIGNMENT_NODE must be of same type line: %d\n", ast->declaration_assignment.line);
 				return ERROR;
 			}
 
-			if(left_exp!=right_exp){
+			if(exp2!=exp1){
 				printf("ERROR DECLARATION_ASSIGNMENT_NODE must of be same type line: %d\n", ast->declaration_assignment.line);
 			return ERROR;
 			}
@@ -717,10 +729,10 @@ int semantic_check( node *ast) {
 		//Eric necessary? 
 		case 25:
 			//printf("CONST_DECLARATION_ASSIGNMENT_NODE %d\n", kind);
-			left_exp = semantic_check(ast->const_declaration_assignment.type);
-			right_exp = semantic_check(ast->const_declaration_assignment.value);
+			exp2 = semantic_check(ast->const_declaration_assignment.type);
+			exp1 = semantic_check(ast->const_declaration_assignment.value);
 
-			if(right_exp==ERROR || left_exp == ERROR)
+			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
 			if(ast->const_declaration_assignment.type->kind == VAR_NODE){
@@ -750,29 +762,29 @@ int semantic_check( node *ast) {
 				return ERROR;
 			}
 
-			if(left_exp==right_exp){
-				return left_exp;
+			if(exp2==exp1){
+				return exp2;
 			}
 
-			if(left_exp==IVEC2 || left_exp==IVEC3 || left_exp==IVEC4){
-				if(right_exp==INT){
+			if(exp2==IVEC2 || exp2==IVEC3 || exp2==IVEC4){
+				if(exp1==INT){
 					return INT;
 				}
 			}
 
-			if(left_exp==BVEC2 || left_exp==BVEC3 || left_exp==BVEC4){
-				if(right_exp==BOOL){
+			if(exp2==BVEC2 || exp2==BVEC3 || exp2==BVEC4){
+				if(exp1==BOOL){
 					return BOOL;
 				}
 			}
 
-			if(left_exp==VEC2 || left_exp==VEC3 || left_exp==VEC4){
-				if(right_exp==FLOAT){
+			if(exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
+				if(exp1==FLOAT){
 					return FLOAT;
 				}
 			}
 
-			if(left_exp!=right_exp){
+			if(exp2!=exp1){
 				printf("ERROR types must match for assignement line:%d\n", ast->const_declaration_assignment.line);
 				return ERROR;
 			}
@@ -781,14 +793,14 @@ int semantic_check( node *ast) {
 		//Eric Needed? 
 		case 26:
 			//printf("ARGUMENTS_COMMA_NODE %d\n", kind);
-			right_exp = semantic_check(ast->arguments_comma.arguments);
-			left_exp = semantic_check(ast->arguments_comma.expression);
+			exp1 = semantic_check(ast->arguments_comma.arguments);
+			exp2 = semantic_check(ast->arguments_comma.expression);
 
-			if(right_exp==ERROR || left_exp == ERROR)
+			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
-			if(right_exp==left_exp){
-				return right_exp;
+			if(exp1==exp2){
+				return exp1;
 			}else{
 				printf("ERROR ARGUMENTS_COMMA_NODE line:%d\n", ast->arguments_comma.line);
 				return ERROR;

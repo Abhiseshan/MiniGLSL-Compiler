@@ -73,12 +73,12 @@ int symbol_exists_in_this_scope(char *id) {
 	while(cur) {
 		if (cur->id) {
 			if(strcmp(cur->id, id) == 0) {
-				return 1;
+				return cur->type_code;
 			}
 		}
 		cur = cur->sib;
 	}
-	return 0;
+	return ERROR;
 }
 
 /**

@@ -274,13 +274,13 @@ int semantic_check(node *ast) {
 				}else if(exp2==VEC4 && exp1==VEC4){
 					return VEC4;
 				}else if(exp2==BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE arithmetic operators should have arithmetic operands line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1==BOOL || exp1 == BVEC2 || exp1 == BVEC3 || exp1 == BVEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE arithmetic operators should have arithmetic operands line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2!=exp1){
-					printf("ERROR BINARY_EXPRESSION_NODE operands should be of same base type line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
 					return ERROR;
 				}
 			}
@@ -296,15 +296,15 @@ int semantic_check(node *ast) {
 				}else if(exp1 == FLOAT && (exp2==FLOAT || exp2==VEC2 || exp2==VEC3 || exp2==VEC4)){
 					return exp2;
 				}else if(exp2 == BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE arithmetic operators should have arithmetic operands line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1==BOOL || exp1 == BVEC2 || exp1 == BVEC3 || exp1 == BVEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE arithmetic operators should have arithmetic operands line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2==exp1){
 					return exp2;
 				}else if(exp2!=exp1){
-					printf("ERROR BINARY_EXPRESSION_NODE operands should be of same base type line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
 					return ERROR;
 				}
 			}
@@ -316,21 +316,19 @@ int semantic_check(node *ast) {
 				}else if(exp2==FLOAT && exp1==FLOAT){
 					return FLOAT;
 				}else if(exp2 == BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE arithmetic operators should have arithmetic operands line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1==BOOL || exp1 == BVEC2 || exp1 == BVEC3 || exp1 == BVEC4){
-					printf("ERROR BINARY_EXPRESSION_NODE arithmetic operators should have arithmetic operands line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2!=exp1){
-					printf("ERROR BINARY_EXPRESSION_NODE operands should be of same base type line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
 					return ERROR;
 				}else{
-					printf("ERROR BINARY_EXPRESSION_NODE operands can only be scalars line: %d\n", ast->binary_expr.line);
+					printf("Line: %d: error: TYPE MISMATCH, expecting operands of SCALAR type\n",ast->line_num);						
 					return ERROR;
 				}
-
 			}
-
 
 			break;
 		case INT_NODE:
@@ -354,10 +352,10 @@ int semantic_check(node *ast) {
 			break;
 		case VARIABLE_NODE:
 			int type;
-			type = checkDeclaredInScope(ast->variable_exp.identifier,in_scope);
+			type = checkDeclaredInScope(ast->variable_exp.identifier);
 			//printf("VAR_NODE %d\n", kind);
 			if(type==ERROR){
-				printf("ERROR: Variable not declared in scope before it is used line:%d \n", ast->line_num );
+				printf("Line: %d: error: UNDEFINED VARIABLE, %s not defined in scope before it is used.\n",ast->line_num, ast->variable_exp.identifier);						
 				return ERROR;
 			}else{
 				return type;
@@ -426,17 +424,18 @@ int semantic_check(node *ast) {
 				}
 				break;
 			default:
-					printf("Line: %d: error: Cannot read index of non vector data types\n",ast->line_num);
+					printf("Line: %d: error: Cannot read index of scalar data types\n",ast->line_num);
 				return ERROR;
 			}
 
 			break;
+
 		case FUNCTION_NODE:
 			//printf("FUNCTION_NODE %d\n", kind);
 			type = semantic_check(ast->function_exp.arguments);
 			if(type==ERROR)
 				return ERROR;
-			//TODO: get type from function name
+			//TODO: 
 
 			if(ast->function_exp.function_name == 2){ //rsq
 				return FLOAT;
@@ -453,7 +452,7 @@ int semantic_check(node *ast) {
 				return VEC4;
 			}
 
-			printf("ERROR FUNCTION_NODE line: %d\n", ast->function_exp);
+			printf("Line: %d: error: UNDEFINED function %s\n",ast->line_num, getFuncString(ast->function_exp.function_name));
 			return ERROR;
 
 			break;

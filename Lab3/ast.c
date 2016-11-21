@@ -198,11 +198,24 @@ char* appendChar(const char* str, char c) {
     return result;
 }
 
+const int getTypeCode(int base, int size) {
+    switch(base) {
+        case INT:
+            return size - 1;
+        case FLOAT:
+            return 4 + size - 1;
+        case BOOL:
+            return 8 + size - 1;
+        default:
+            return ERROR;
+    }
+}
+
 const char* getTypeString(int base, int size) {
     switch(base) {
         case INT:
             if(size == 1)
-                return "int";
+                return 0;
             else
                 return appendChar("ivec", size - 1 + '1');
         case FLOAT:

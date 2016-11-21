@@ -50,8 +50,17 @@ typedef enum {
 
 typedef enum {
     INT = 0,
+    IVEC2,
+    IVEC3,
+    IVEC4,
     FLOAT,
-    BOOL
+    VEC2,
+    VEC3,
+    VEC4,
+    BOOL,
+    BVEC2,
+    BVEC3,
+    BVEC4,
 } type_code;
 
 typedef enum {
@@ -150,21 +159,21 @@ struct node_ {
     } arguments;
     
     struct {
-        type_code base;
-        int size;   // Used for vectors
+      type_code base;
+      int size;   // Used for vectors
     } type_node;
     
     node *expression_variable;
     node *nested_expression;
     
     struct {
-        char* id;
+      char* id;
     } variable;
     
     struct {
-        char* id;
-        int index;
-        char *type_name;  // Assigned during semantic analysis
+      char* id;
+      int index;
+      char *type_name;  // Assigned during semantic analysis
     } array_index;
   };
 };
@@ -172,5 +181,8 @@ struct node_ {
 node *ast_allocate(node_kind type, ...);
 void ast_free(node *ast);
 void ast_print(node * ast, int indentLevel);
+const char* getFuncString(int funcCode);
+const char* getTypeString(int base, int size);
+const int getTypeCode(int base, int size);
 
 #endif /* AST_H_ */

@@ -365,7 +365,9 @@ int semantic_check(node *ast) {
 		case ARRAY_INDEX_NODE:
 			//printf("ARRAY_NODE %d\n", kind);
 			name = ast->array_exp.identifier;
-			type = getType(name);
+			//type = getType(name);
+
+			type = getTypeCode(ast->type_node.base, ast->type_node.size)
 
 			index = ast->array_exp.index;
 			switch(type){
@@ -432,14 +434,12 @@ int semantic_check(node *ast) {
 
 		case FUNCTION_NODE:
 			//printf("FUNCTION_NODE %d\n", kind);
-			type = semantic_check(ast->function_exp.arguments);
+			type = semantic_check(ast->function_exp.arguments); //Need to figre out if it is printing if the argeuments passed into the function is right.
 			if(type==ERROR)
 				return ERROR;
-			//TODO: 
 
 			if(ast->function_exp.function_name == 2){ //rsq
 				return FLOAT;
-
 			}else if(ast->function_exp.function_name == 0){ //dp3
 				if(type==VEC4 || type == VEC3){
 					return FLOAT;
@@ -447,15 +447,15 @@ int semantic_check(node *ast) {
 				if(type==IVEC4 || type == IVEC3){
 					return INT;
 				}
-
 			}else if (ast->function_exp.function_name == 1){ //lit
 				return VEC4;
 			}
 
-			printf("Line: %d: error: UNDEFINED function %s\n",ast->line_num, getFuncString(ast->function_exp.function_name));
+			printf("Line: %d: error: UNRECOGNIZED function %s\n",ast->line_num, getFuncString(ast->function_exp.function_name));
 			return ERROR;
 
 			break;
+
 		case CONSTRUCTOR_NODE:
 			//printf("CONSTRUCTOR_NODE %d\n", kind);
 			exp2 = semantic_check(ast->constructor_exp.type);
@@ -467,54 +467,100 @@ int semantic_check(node *ast) {
 			depth = checkDepth(ast->constructor_exp.arguments);
 
 			switch(exp2){
-			case IVEC2:
-				if(depth>2){
-					printf("ERROR too many arguments line: %d\n", ast->constructor_exp.line);
-				}
-				break;
-			case IVEC3:
-				if(depth>3){
-					printf("ERROR too many arguments line: %d\n", ast->constructor_exp.line);
-				}
-				break;
-			case IVEC4:
-				if(depth>4){
-					printf("ERROR too many arguments line: %d\n", ast->constructor_exp.line);
-				}
-				break;
-			case BVEC2:
-				if(depth>2){
-					printf("ERROR too many arguments line: %d\n", ast->constructor_exp.line);
-				}
-				break;
-			case BVEC3:
-				if(depth>3){
-					printf("ERROR too many arguments line: %d\n", ast->constructor_exp.line);
-				}
-				break;
-			case BVEC4:
-				if(depth>4){
-					printf("ERROR too many arguments line: %d\n", ast->constructor_exp.line);
-				}
-				break;
-			case VEC2:
-				if(depth>2){
-					printf("ERROR too many arguments line: %d\n", ast->constructor_exp.line);
-				}
-				break;
-			case VEC3:
-				if(depth>3){
-					printf("ERROR too many arguments line: %d\n", ast->constructor_exp.line);
-				}
-				break;
-			case VEC4:
-				if(depth>4){
-					printf("ERROR too many arguments line: %d\n", ast->constructor_exp.line);
-				}
-			default:
-				if(depth>1){
-					printf("ERROR too many arguments line: %d\n", ast->constructor_exp.line);
-				}
+				case IVEC2:
+					if(depth>2){
+						printf("Line: %d: error: TOO MANY ARGUMENTS, expecting 2, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					else if (depth<2){
+						printf("Line: %d: error: TOO FEW ARGUMENTS, expecting 2, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					break;
+				case IVEC3:
+					if(depth>3){
+						printf("Line: %d: error: TOO MANY ARGUMENTS, expecting 3, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					else if (depth<3){
+						printf("Line: %d: error: TOO FEW ARGUMENTS, expecting 3, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					break;
+				case IVEC4:
+					if(depth>4){
+						printf("Line: %d: error: TOO MANY ARGUMENTS, expecting 4, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					else if (depth<4){
+						printf("Line: %d: error: TOO FEW ARGUMENTS, expecting 4, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					break;
+				case BVEC2:
+					if(depth>2){
+						printf("Line: %d: error: TOO MANY ARGUMENTS, expecting 2, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					else if (depth<2){
+						printf("Line: %d: error: TOO FEW ARGUMENTS, expecting 2, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					break;
+				case BVEC3:
+					if(depth>3){
+						printf("Line: %d: error: TOO MANY ARGUMENTS, expecting 3, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					else if (depth<3){
+						printf("Line: %d: error: TOO FEW ARGUMENTS, expecting 3, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					break;
+				case BVEC4:
+					if(depth>4){
+						printf("Line: %d: error: TOO MANY ARGUMENTS, expecting 4, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					else if (depth<4){
+						printf("Line: %d: error: TOO FEW ARGUMENTS, expecting 4, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					break;	
+				case VEC2:
+					if(depth>2){
+						printf("Line: %d: error: TOO MANY ARGUMENTS, expecting 2, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					else if (depth<2){
+						printf("Line: %d: error: TOO FEW ARGUMENTS, expecting 2, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					break;
+				case VEC3:
+					if(depth>3){
+						printf("Line: %d: error: TOO MANY ARGUMENTS, expecting 3, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					else if (depth<3){
+						printf("Line: %d: error: TOO FEW ARGUMENTS, expecting 3, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					break;
+				case VEC4:
+					if(depth>4){
+						printf("Line: %d: error: TOO MANY ARGUMENTS, expecting 4, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					else if (depth<4){
+						printf("Line: %d: error: TOO FEW ARGUMENTS, expecting 4, got %d\n",ast->line_num, depth);
+						return ERROR;
+					}
+					break;
+				default:
+					if(depth>1){
+						printf("Line: %d: error: UNKNOWN CONSTRUCTOR\n",ast->line_num);
+					}
 			}
 
 			if(exp2==exp1){
@@ -540,13 +586,11 @@ int semantic_check(node *ast) {
 			}
 
 			if(exp2!=exp1){
-				printf("ERROR types mismatch line: %d\n", ast->constructor_exp.line);
+				printf("Line: %d: error: TYPE MISMATCH\n",ast->line_num);
 				return ERROR;
 			}
 			break;
 
-
-			break;
 		//Eric ? TYPE_NODE? 
 		case 17:
 			//printf("TYPE_NODE %d\n", kind);
@@ -584,13 +628,14 @@ int semantic_check(node *ast) {
 			//printf("WHILE_STATEMENT_NODE No node %d\n", kind);
 			//No WHILE_STATEMENT_NODE
 			break;
+		//Eric correct the ast pointers
 		case ASSIGNMENT_NODE:
 			//printf("ASSIGNMENT_NODE %d\n", kind);
 			tmp = semantic_check(ast->assignment.left);
 			// set type of symbol in local var
 			name = ast->assignment.left->variable_exp.identifier;
 
-			exp2 = getType(name);
+			exp2 =	getTypeCode(ast->type_node.base, ast->type_node.size)
 			exp1 = semantic_check(ast->assignment.right);
 
 			if(exp1==ERROR || exp2 == ERROR || tmp ==ERROR)
@@ -599,7 +644,7 @@ int semantic_check(node *ast) {
 			if(ast->assignment.left->kind == VAR_NODE){
 				type = getState(ast->assignment.left->variable_exp.identifier);
 				if(type == ATTRIBUTE || type == UNIFORM || type==CONST_S){
-					printf("ERROR Cannot assign to read-only type line: %d \n",ast->assignment.line);
+					printf("Line: %d: error: INVALID ASSIGNMENT, trying to assign to a const or read-only variable %d\n",ast->line_num);
 					return ERROR;
 				}
 			}

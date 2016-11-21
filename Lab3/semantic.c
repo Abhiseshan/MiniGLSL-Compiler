@@ -1,7 +1,17 @@
 #include "semantic.h"
 
-int semantic_check( node *ast) {
-  return 1; // failed checks
+/*int semantic_check( node *ast) {
+  return 0; // failed checks
+}*/
+
+int checkPredefined(char* name) {
+	if strcmp(name, "gl_FragColor") || strcmp(name, "gl_FragDepth") || strcmp(name, "gl_FragCoord") || strcmp(name, "gl_TexCoord") || strcmp(name, " gl_Color")  || 
+		strcmp(name, "gl_Secondary") || strcmp(name, "gl_FogFragCoord") || strcmp(name, "gl_Light_Half") || strcmp(name, " gl_Light_Ambient") || 
+		strcmp(name, "gl_Material_Shininess") || strcmp(name, "env1") || strcmp(name, "env2") || strcmp(name, "env3")
+
+		return ERROR;
+
+	return 1;
 }
 
 int checkDepth( node *ast) {
@@ -694,7 +704,13 @@ int semantic_check(node *ast) {
 			break;
 		case DECLARATION_NODE:
 			//printf("DECLARATION_NODE %d\n", kind);
-			isDecl=checkExists(ast->declaration.iden,in_scope, ast->declaration.line);
+			isDecl = checkExists(ast->declaration.iden,in_scope, ast->declaration.line);
+
+			if (checkPredefined(ast->declaration.iden) == ERROR) {
+				printf("line: %d: error: Cannot declare Pre-defined variables\n", );
+				return ERROR;
+			}
+
 			if(isDecl!=ERROR){
 				printf("Error: Variable cannot be redeclared line: %d\n", ast->declaration.line);
 				return ERROR;

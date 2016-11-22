@@ -131,7 +131,70 @@ node *ast_allocate(node_kind kind, ...) {
 }
 
 void ast_free(node *ast) {
-
+    if(ast == NULL)
+        return;
+    
+    switch(ast->kind) {
+        case ENTER_SCOPE_NODE:
+            free(ast->enter_scope);
+            break;
+        case SCOPE_NODE:
+            free(ast->scope.declarations);
+            free(ast->scope.statements);
+            break;
+        case NESTED_EXPRESSION_NODE:
+            free(ast->nested_expression);
+            break;
+        case DECLARATIONS_NODE:
+            free(ast->declarations.declarations);
+            free(ast->declarations.declaration);
+            break;
+        case DECLARATION_NODE:
+            free(ast->declaration.type);
+            free(ast->declaration.expression);
+            break;
+        case STATEMENTS_NODE:
+            free(ast->statements.statements);
+            free(ast->statements.statement);
+            break;
+        case ASSIGNMENT_NODE:
+            free(ast->assignment.var);
+            free(ast->assignment.expression);
+            break;
+        case IF_STATEMENT_NODE:
+            free(ast->if_statement.cond);
+            free(ast->if_statement.then_statement);
+            free(ast->if_statement.else_statement);
+            break;
+        case NESTED_SCOPE_NODE:
+            free(ast->nested_scope);
+            break;
+        case UNARY_EXPRESION_NODE:
+            free(ast->unary.right);
+            break;
+        case BINARY_EXPRESSION_NODE:
+            free(ast->binary.left);
+            free(ast->binary.right);
+            break;
+        case FUNCTION_NODE
+            free(ast->function.args);
+            break;
+        case CONSTRUCTOR_NODE:
+            free(ast->constructor.type);
+            free(ast->constructor.args);
+            break;
+        case ARGUMENTS_NODE:
+            free(ast->arguments.args);
+            free(ast->arguments.expression);
+            break;
+        case EXPRESSION_VARIABLE_NODE:
+            free(ast->expression_variable);
+            break;
+        default:
+            break;
+    }
+    
+    free(ast);
 }
 
 void printIndent(int indentLevel) {

@@ -376,55 +376,55 @@ int semantic_check(node *ast) {
 			index = ast->array_exp.index;
 			switch(type){
 			case IVEC2:
-				if(index>=2){
+				if(index>=2 || index < 0){
 					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case IVEC3:
-				if(index>=3){
+				if(index>=3 || index < 0){
 					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case IVEC4:
-				if(index>=4){
+				if(index>=4 || index < 0){
 					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case BVEC2:
-				if(index>=2){
+				if(index>=2 || index < 0){
 					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case BVEC3:
-				if(index>=3){
+				if(index>=3 || index < 0){
 					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case BVEC4:
-				if(index>=4){
+				if(index>=4 || index < 0){
 					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case VEC2:
-				if(index>=2){
+				if(index>=2 || index < 0){
 					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case VEC3:
-				if(index>=3){
+				if(index>=3 || index < 0){
 					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
 				break;
 			case VEC4:
-				if(index>=4){
+				if(index>=4 || index < 0){
 					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
 					return ERROR;
 				}
@@ -623,12 +623,13 @@ int semantic_check(node *ast) {
 			// set type of symbol in local var
 			name = ast->assignment.left->variable_exp.identifier;
 
-			exp2 =	getTypeCode(ast->type_node.base, ast->type_node.size)
+			exp2 = getTypeCode(ast->type_node.base, ast->type_node.size)
 			exp1 = semantic_check(ast->assignment.right);
 
 			if(exp1==ERROR || exp2 == ERROR || tmp ==ERROR)
 				return ERROR;
 
+			//We have to modify this to our own approach. Releated to predefined variableds 
 			if(ast->assignment.left->kind == VAR_NODE){
 				type = getState(ast->assignment.left->variable_exp.identifier);
 				if(type == ATTRIBUTE || type == UNIFORM || type==CONST_S){
@@ -637,6 +638,7 @@ int semantic_check(node *ast) {
 				}
 			}
 
+			//We have to modify this to our own approach. Releated to predefined variableds 
 			if(ast->assignment.right->kind == VAR_NODE){
 				type = getState(ast->assignment.right->variable_exp.identifier);
 
@@ -645,6 +647,9 @@ int semantic_check(node *ast) {
 					return ERROR;
 				}
 			}
+
+			//Find if the declared variable
+			if(ast->ass)
 
 			if(exp2==exp1){
 				return exp2;
@@ -704,12 +709,19 @@ int semantic_check(node *ast) {
 			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
-			isDecl=checkExists(ast->declaration_assignment.iden,in_scope, ast->declaration_assignment.line);
-			if(isDecl!=ERROR){
-				printf("Error: Variable cannot be redeclared line: %d\n", ast->declaration_assignment.line);
+			isDecl = symbol_exists_in_this_scope(ast->declaration_assignment.iden);
+
+			if(isDecl==ERROR){
+				printf("Line: %d: error: Variable not declared in scope.\n",ast->line_num);
 				return ERROR;
 			}
 			
+			if (is_symobl_const(ast->declaration_assignment.iden)) {
+				printf("Line: %d: error: cannot assign a value to a constant variable.\n",ast->line_num);
+				return ERROR;
+			}
+
+			//We have to modify this to our own approach. Releated to predefined variableds 
 			if(ast->const_declaration_assignment.type->kind == VAR_NODE){
 				type = getState(ast->const_declaration_assignment.type->variable_exp.identifier);
 
@@ -719,6 +731,7 @@ int semantic_check(node *ast) {
 				}
 			}
 
+			//We have to modify this to our own approach. Releated to predefined variableds 
 			if(ast->declaration_assignment.value->kind == VAR_NODE){
 				type = getState(ast->declaration_assignment.value->variable_exp.identifier);
 
@@ -762,7 +775,8 @@ int semantic_check(node *ast) {
 			}
 
 			break;
-		//Eric necessary? 
+		//Eric necessary?
+		//Added constant to the prev case. 
 		case 25:
 			//printf("CONST_DECLARATION_ASSIGNMENT_NODE %d\n", kind);
 			exp2 = semantic_check(ast->const_declaration_assignment.type);

@@ -134,15 +134,9 @@ int semantic_check(node *ast) {
 
 			return exp2;
 			break;
-		//Eric is this needed? 
-		case EXPRESSION_NODE:
-			//printf("EXPRESSION_NODE No node %d\n", kind);
-			// No EXPRESSION_NODE
-			break;
-		//Eric check this out. Nested Expressions? 
-		case 12:
+		case NESTED_EXPRESSION:
 			//printf("PREN_EXPRESSION_NODE %d\n", kind);
-			return semantic_check(ast->paren_exp.expression);
+			return semantic_check(ast->nested_expression);
 			break;
 
 		case UNARY_EXPRESION_NODE:
@@ -602,14 +596,14 @@ int semantic_check(node *ast) {
 			break;
 
 		//Eric ? TYPE_NODE? 
-		case 17:
+		case TYPE_NODE:
 			//printf("TYPE_NODE %d\n", kind);
-			return ast->type.type_name;
+			return ast->type.base;
 			break;
 		//Eric this and the next
-		case 18:
+		case IF_STATEMENT_NODE:
 			//printf("IF_ELSE_STATEMENT_NODE %d\n", kind);
-			exp2 = semantic_check(ast->if_else_statement.condition);
+			exp2 = semantic_check(ast->if_statement.condition);
 
 			if(exp2 == ERROR)
 				return ERROR;
@@ -618,25 +612,9 @@ int semantic_check(node *ast) {
 				printf("ERROR: Expression must evaluate to bool line: %d\n", ast->if_else_statement.line);
 				return ERROR;
 			}
-			semantic_check(ast->if_else_statement.else_statement);
-			semantic_check(ast->if_else_statement.then_statement);
-			break;
-		case 19:
-			//printf("IF_STATEMENT_NODE %d\n", kind);
-			exp2 = semantic_check(ast->if_else_statement.condition);
-			if(exp2 == ERROR)
-				return ERROR;
-
-			if(exp2!=BOOL){
-				printf("ERROR: Expression must evaluate to bool line: %d\n", ast->if_else_statement.line);
-				return ERROR;
-			}
+			if(ast->if_statement.else_statement != NULL) 
+                            semantic_check(ast->if_statement.else_statement);
 			semantic_check(ast->if_statement.then_statement);
-			break;
-		//Eric remove? 
-		case 20:
-			//printf("WHILE_STATEMENT_NODE No node %d\n", kind);
-			//No WHILE_STATEMENT_NODE
 			break;
 		//Eric correct the ast pointers
 		case ASSIGNMENT_NODE:
@@ -718,8 +696,7 @@ int semantic_check(node *ast) {
 				return semantic_check(ast->declaration.type);
 			}
 			break;
-		//Eric Assignemnt node? 
-		case 24:
+		case ASSIGNMENT_NODE:
 			//printf("DECLARATION_ASSIGNMENT_NODE %d\n", kind);
 			exp2 = semantic_check(ast->declaration_assignment.type);
 			exp1 = semantic_check(ast->declaration_assignment.value);
@@ -865,10 +842,9 @@ int semantic_check(node *ast) {
 				return ERROR;
 			}
 			break;
-		//Eric EXPRESSION_VARIABLE_NODE? 
-		case 27:
+		case EXPRESSION_VARIABLE_NODE:
 			//printf("ARGUMENTS_EXPRESSION_NODE %d\n", kind);
-			return semantic_check(ast->arguments_expression.expression);
+			return semantic_check(ast->expression_variable);
 			break;
 		default:
 			//printf("DEFAULT!!\n");

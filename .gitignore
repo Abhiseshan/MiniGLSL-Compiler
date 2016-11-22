@@ -1,0 +1,4 @@
+*.o
+Lab3/parser.c
+Lab3/parser.tab.h
+Lab3/y.output

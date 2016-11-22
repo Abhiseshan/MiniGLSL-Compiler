@@ -97,7 +97,9 @@ int semantic_check(node *ast) {
 		case ENTER_SCOPE_NODE:
 			in_scope++;
 			//printf("ENTER_SCOPE_NODE %d\n", kind);
+			scope_enter();
 			exp1 = semantic_check(ast->enter_scope.scope);
+			scope_exit();
 			in_scope--;
 			return exp1;
 			break;
@@ -698,6 +700,15 @@ int semantic_check(node *ast) {
 				printf("Line: %d: error: Variable already declared.\n",ast->line_num);
 				return ERROR;
 			}else{
+
+				symbol_table_entry new_entry;
+				new_entry.id = ast->declaration.id;
+		  		new_entry.is_const = ast->declaration.is_const;
+		  		new_entry.type_code = ast->declaration.type_node->type.type_code;
+		  		new_entry.vec = ast->declaration.type_node->type.vec;
+		  		//new_entry.is_init = ?
+		  		symbol_add(new_entry);
+
 				return semantic_check(ast->declaration.type);
 			}
 			break;

@@ -81,6 +81,19 @@ int symbol_exists_in_this_scope(char *id) {
 	return ERROR;
 }
 
+bool is_symobl_const(char *id) {
+	symbol_table_entry *cur = stack;
+	while(cur) {
+		if (cur->id) {
+			if(strcmp(cur->id, id) == 0) {
+				return cur->is_const;
+			}
+		}
+		cur = cur->sib;
+	}
+	return false;
+}
+
 /**
  * Return symbol with id
  */

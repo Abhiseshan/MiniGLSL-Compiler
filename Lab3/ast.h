@@ -181,6 +181,6 @@ node *ast_allocate(node_kind type, ...);
 void ast_free(node *ast);
 void ast_print(node * ast, int indentLevel);
 const char* getFuncString(int funcCode);
-const char* getTypeString(int base, int size);
+const char* getTypeString(int code);
 
 #endif /* AST_H_ */

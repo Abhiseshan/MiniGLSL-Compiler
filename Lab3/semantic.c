@@ -1,9 +1,9 @@
 #include "semantic.h"
 
-/*int semantic_check( node *ast) {
+int semantic_check( node *ast) {
   return 0; // failed checks
-}*/
-
+}
+/*
 int checkPredefined(char* name) {
 	if strcmp(name, "gl_FragColor") || strcmp(name, "gl_FragDepth") || strcmp(name, "gl_FragCoord") || strcmp(name, "gl_TexCoord") || strcmp(name, " gl_Color")  || 
 		strcmp(name, "gl_Secondary") || strcmp(name, "gl_FogFragCoord") || strcmp(name, "gl_Light_Half") || strcmp(name, " gl_Light_Ambient") || 
@@ -874,3 +874,4 @@ int semantic_check(node *ast) {
 
   return 0; // failed checks
 }
+*/

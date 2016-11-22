@@ -190,22 +190,22 @@ statement
 
 type
   : INT_T
-      { $$ = ast_allocate(TYPE_NODE, INT, 1, yyline);
+      { $$ = ast_allocate(TYPE_NODE, INT, yyline);
         yTRACE("type -> INT_T \n") }
   | IVEC_T
-      { $$ = ast_allocate(TYPE_NODE, INT, $1+1, yyline);
+      { $$ = ast_allocate(TYPE_NODE, INT + $1, yyline);
         yTRACE("type -> IVEC_T \n") }
   | BOOL_T
-      { $$ = ast_allocate(TYPE_NODE, BOOL, 1, yyline);
+      { $$ = ast_allocate(TYPE_NODE, BOOL, yyline);
         yTRACE("type -> BOOL_T \n") }
   | BVEC_T
-      { $$ = ast_allocate(TYPE_NODE, BOOL, $1+1, yyline);
+      { $$ = ast_allocate(TYPE_NODE, BOOL + $1, yyline);
         yTRACE("type -> BVEC_T \n") }
   | FLOAT_T
-      { $$ = ast_allocate(TYPE_NODE, FLOAT, 1, yyline);
+      { $$ = ast_allocate(TYPE_NODE, FLOAT, yyline);
         yTRACE("type -> FLOAT_T \n") }
   | VEC_T
-      { $$ = ast_allocate(TYPE_NODE, FLOAT, $1+1, yyline);
+      { $$ = ast_allocate(TYPE_NODE, FLOAT + $1, yyline);
         yTRACE("type -> VEC_T \n") }
   ;
 

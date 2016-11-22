@@ -692,7 +692,7 @@ int semantic_check(node *ast) {
 
 
 			if(exp2!=exp1){
-				printf("ERROR ASSIGNMENT_NODE must be of same type line: %d \n",ast->assignment.line);
+				printf("Line: %d: error: TYPE MISMATCH\n",ast->line_num);
 				return ERROR;
 			}
 
@@ -712,7 +712,7 @@ int semantic_check(node *ast) {
 			}
 
 			if(isDecl!=ERROR){
-				printf("Error: Variable cannot be redeclared line: %d\n", ast->declaration.line);
+				printf("Line: %d: error: Variable already declared.\n",ast->line_num);
 				return ERROR;
 			}else{
 				return semantic_check(ast->declaration.type);
@@ -775,13 +775,13 @@ int semantic_check(node *ast) {
 
 
 			if(exp2!=exp1){
-				printf("ERROR ASSIGNMENT_NODE must be of same type line: %d\n", ast->declaration_assignment.line);
+				printf("Line: %d: error: TYPE MISMATCH\n",ast->line_num);
 				return ERROR;
 			}
 
 			if(exp2!=exp1){
-				printf("ERROR DECLARATION_ASSIGNMENT_NODE must of be same type line: %d\n", ast->declaration_assignment.line);
-			return ERROR;
+				printf("Line: %d: error: TYPE MISMATCH\n",ast->line_num);
+				return ERROR;
 			}
 
 			break;

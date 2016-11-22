@@ -79,9 +79,10 @@ int in_scope=0;
 
 int semantic_check(node *ast) {
 
-	if(ast==NULL)
-		fprintf(errorFile,"Semantic function visited a NULL node\n");
-		return ERROR;
+	if(ast==NULL) {
+            fprintf(errorFile,"Semantic function visited a NULL node\n");
+            return ERROR;
+        }
 
 	int kind;
 	int type;
@@ -95,37 +96,33 @@ int semantic_check(node *ast) {
 
 	switch(kind){
 		case ENTER_SCOPE_NODE:
-			in_scope++;
-			//printf("ENTER_SCOPE_NODE %d\n", kind);
+			in_scope++;        
 			exp1 = semantic_check(ast->enter_scope.scope);
 			in_scope--;
 			return exp1;
 			break;
 
 		case SCOPE_NODE:
-			//printf("SCOPE_NODE %d\n", kind);
 			exp1 = semantic_check(ast->scope.declarations);
 			exp2 = semantic_check(ast->scope.statements);
 
 			if(exp1==ERROR || exp2 == ERROR)
-				return ERROR;
+                            return ERROR;
 
 			return 0;
 			break;
 
 		case DECLARATIONS_NODE:
-			//printf("DECLARATIONS_NODE %d\n", kind);
 			exp1 = semantic_check(ast->declarations.declarations);
 			exp2 = semantic_check(ast->declarations.declaration);
 
 			if(exp1==ERROR || exp2 == ERROR)
-				return ERROR;
+                            return ERROR;
 
 			return exp2;
 			break;
 
 		case STATEMENTS_NODE:
-			//printf("STATEMENTS_NODE %d\n", kind);
 			exp1 = semantic_check(ast->statements.statements);
 			exp2 = semantic_check(ast->statements.statement);
 
@@ -134,15 +131,12 @@ int semantic_check(node *ast) {
 
 			return exp2;
 			break;
+                        
 		case NESTED_EXPRESSION:
-			//printf("PREN_EXPRESSION_NODE %d\n", kind);
 			return semantic_check(ast->nested_expression);
 			break;
 
 		case UNARY_EXPRESION_NODE:
-			//printf("UNARY_EXPRESION_NODE %d\n", kind);
-			//printf("Operator: %d\n", ast->unary_expr.op);
-
 			exp1 = semantic_check(ast->unary.right);
 
 			if(exp1==ERROR)
@@ -675,10 +669,8 @@ int semantic_check(node *ast) {
 			}
 
 			break;
-		//Eic?
-		case 22:
-			//printf("NESTED_SCOPE_NODE No node for %d\n", kind);
-			// No NESTED_SCOPE_NODE
+		case NESTED_SCOPE_NODE:
+                    return semantic_check(ast->nested_scope);
 			break;
 		case DECLARATION_NODE:
 			//printf("DECLARATION_NODE %d\n", kind);

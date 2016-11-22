@@ -94,8 +94,7 @@ node *ast_allocate(node_kind kind, ...) {
 	  break;
 
   	case TYPE_NODE:
-	  ast->type_node.base = (type_code) va_arg(args, int); 
-      ast->type_node.size = va_arg(args, int);
+	  ast->type_node.type = (type_code) va_arg(args, int);
 	  break;
 
   	case VARIABLE_NODE:
@@ -261,38 +260,34 @@ char* appendChar(const char* str, char c) {
     return result;
 }
 
-const int getTypeCode(int base, int size) {
-    switch(base) {
+const char* getTypeString(int code) {
+    switch(code) {
         case INT:
-            return size - 1;
+            return "int";
         case FLOAT:
-            return 4 + size - 1;
+            return "float";
         case BOOL:
-            return 8 + size - 1;
+            return "bool";
+        case IVEC2:
+            return "ivec2";
+        case VEC2:
+            return "vec2";
+        case BVEC2:
+            return "bvec2";
+        case IVEC3:
+            return "ivec3";
+        case VEC3:
+            return "vec3";
+        case BVEC3:
+            return "bvec3";
+        case IVEC4:
+            return "ivec4";
+        case VEC4:
+            return "vec4";
+        case BVEC4:
+            return "bvec4";
         default:
-            return ERROR;
-    }
-}
-
-const char* getTypeString(int base, int size) {
-    switch(base) {
-        case INT:
-            if(size == 1)
-                return 0;
-            else
-                return appendChar("ivec", size - 1 + '1');
-        case FLOAT:
-            if(size == 1)
-                return "float";
-            else
-                return appendChar("vec", size - 1 + '1');
-        case BOOL:
-            if(size == 1)
-                return "bool";
-            else
-                return appendChar("bvec", size - 1 + '1');
-        default:
-            return "";
+            return "unknown type";
     }
 }
 
@@ -334,7 +329,7 @@ void ast_print(node * ast, int indentLevel) {
             break;
         case ASSIGNMENT_NODE:
             printIndent(indentLevel); printf("(ASSIGN\n");
-            printIndent(indentLevel + 1); printf("type placeholder"); printf("\n");
+            printIndent(indentLevel + 1); printf(getTypeString(ast->assignment.type)); printf("\n");
             ast_print(ast->assignment.var, indentLevel + 1);
             ast_print(ast->assignment.expression, indentLevel + 1);
             printf("\n"); printIndent(indentLevel); printf(")\n");
@@ -351,14 +346,14 @@ void ast_print(node * ast, int indentLevel) {
             break;
         case UNARY_EXPRESION_NODE:
             printIndent(indentLevel); printf("(UNARY\n");
-            printIndent(indentLevel + 1); printf("type placeholder"); printf("\n");
+            printIndent(indentLevel + 1); printf(getTypeString(ast->unary.type)); printf("\n");
             printIndent(indentLevel + 1); printf("%s", getOpString(ast->unary.op)); printf("\n");
             ast_print(ast->unary.right, indentLevel + 1);
             printf("\n"); printIndent(indentLevel); printf(")\n");
             break;
         case BINARY_EXPRESSION_NODE:
             printIndent(indentLevel); printf("(BINARY\n");
-            printIndent(indentLevel + 1); printf("type placeholder"); printf("\n");
+            printIndent(indentLevel + 1); printf(getTypeString(ast->binary.type)); printf("\n");
             printIndent(indentLevel + 1); printf("%s",getOpString(ast->binary.op)); printf("\n");
             ast_print(ast->binary.left, indentLevel + 1);
             ast_print(ast->binary.right, indentLevel + 1);
@@ -390,7 +385,7 @@ void ast_print(node * ast, int indentLevel) {
             ast_print(ast->arguments.expression, indentLevel);
             break;
         case TYPE_NODE:
-            printIndent(indentLevel); printf("%s\n", getTypeString(ast->type_node.base, ast->type_node.size));
+            printIndent(indentLevel); printf("%s\n", getTypeString(ast->type_node.type));
             break;
         case EXPRESSION_VARIABLE_NODE:
             ast_print(ast->expression_variable, indentLevel);

@@ -115,7 +115,7 @@ struct node_ {
     struct {
       node *var;
       node *expression;
-      char *type_name;  // Assigned during semantic analysis
+      type_code type;  // Assigned during semantic analysis
     } assignment;
 
     struct {
@@ -129,14 +129,14 @@ struct node_ {
     struct {
       int op;
       node *right;
-      char *type_name;  // Assigned during semantic analysis
+      type_code type;  // Assigned during semantic analysis
     } unary;
 
     struct {
       int op;
       node *left;
       node *right;
-      char *type_name;  // Assigned during semantic analysis
+      type_code type;  // Assigned during semantic analysis
     } binary;
 
     struct {
@@ -159,8 +159,7 @@ struct node_ {
     } arguments;
     
     struct {
-      type_code base;
-      int size;   // Used for vectors
+      type_code type;
     } type_node;
     
     node *expression_variable;
@@ -173,7 +172,7 @@ struct node_ {
     struct {
       char* id;
       int index;
-      char *type_name;  // Assigned during semantic analysis
+      type_code type;  // Assigned during semantic analysis
     } array_index;
   };
 };
@@ -183,6 +182,5 @@ void ast_free(node *ast);
 void ast_print(node * ast, int indentLevel);
 const char* getFuncString(int funcCode);
 const char* getTypeString(int base, int size);
-const int getTypeCode(int base, int size);
 
 #endif /* AST_H_ */

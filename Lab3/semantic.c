@@ -636,7 +636,9 @@ int semantic_check(node *ast) {
 				return ERROR;
 
 			if(exp2!=BOOL){
-				errorOccurred = 1; fprintf(errorFile,"ERROR: Expression must evaluate to bool line: %d\n", ast->line_num);
+				errorOccurred = 1; 
+				fprintf(errorFile,"Line: %d: error: expecting boolean expression.\n",ast->line_num);
+				
 				return ERROR;
 			}
 			if(ast->if_statement.else_statement != NULL) 

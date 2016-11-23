@@ -619,18 +619,18 @@ int semantic_check(node *ast) {
 		case ASSIGNMENT_NODE:
 
 			node *var = ast->assignment.var;
-            if(var->kind == VARIABLE_NODE)
-                name = var->variable.id;
-            else
-                name = var->array_index.id;
-            
-            symbol_table_entry *entry = symbol_find(name);
-            if(entry == NULL) {
-                printf("Line: %d: error: INVALID ASSIGNMENT, variable %s not defined %d\n", name, ast->line_num);
-                return ERROR;
-            }
-            exp2 = entry->vec;
-            ast->assignment.type = entry->type_code;
+                        if(var->kind == VARIABLE_NODE)
+                            name = var->variable.id;
+                        else
+                            name = var->array_index.id;
+
+                        symbol_table_entry *entry = symbol_find(name);
+                        if(entry == NULL) {
+                            printf("Line: %d: error: INVALID ASSIGNMENT, variable %s not defined %d\n", name, ast->line_num);
+                            return ERROR;
+                        }
+                        exp2 = entry->vec;
+                        ast->assignment.type = entry->type_code;
                         
 			exp1 = semantic_check(ast->assignment.expression);
 
@@ -646,25 +646,11 @@ int semantic_check(node *ast) {
 				printf("ERROR Cannot Read from RESULT modified pre-defined variable line: %d \n",ast->assignment.line);
 				return ERROR;
 			}
-
-			//We have to modify this to our own approach. Releated to predefined variableds 
-			/*if(ast->assignment.left->kind == VAR_NODE){
-				type = getState(ast->assignment.left->variable_exp.identifier);
-				if(type == ATTRIBUTE || type == UNIFORM || type==CONST_S){
-					printf("Line: %d: error: INVALID ASSIGNMENT, trying to assign to a const or read-only variable %d\n",ast->line_num);
-					return ERROR;
-				}
+			
+			if (entry->is_const) {
+				printf("Line: %d: error: cannot assign a value to a constant variable.\n",ast->line_num);
+				return ERROR;
 			}
-
-			//We have to modify this to our own approach. Releated to predefined variableds 
-			if(ast->assignment.right->kind == VAR_NODE){
-				type = getState(ast->assignment.right->variable_exp.identifier);
-
-				if(type == RESULT){
-					printf("ERROR Cannot Read from RESULT modified pre-defined variable line: %d \n",ast->assignment.line);
-					return ERROR;
-				}
-			}*/
 
 			if(exp2!=exp1){
 				printf("Line: %d: error: TYPE MISMATCH\n",ast->line_num);
@@ -675,7 +661,7 @@ int semantic_check(node *ast) {
 			break;
                         
 		case NESTED_SCOPE_NODE:
-            return semantic_check(ast->nested_scope);
+                        return semantic_check(ast->nested_scope);
 			break;
                         
 		case DECLARATION_NODE:
@@ -702,147 +688,6 @@ int semantic_check(node *ast) {
 			}
 			break;
                         
-		case ASSIGNMENT_NODE:
-			exp2 = semantic_check(ast->declaration_assignment.type);
-			exp1 = semantic_check(ast->declaration_assignment.value);
-
-			if(exp1==ERROR || exp2 == ERROR)
-				return ERROR;
-
-			isDecl = symbol_exists_in_this_scope(ast->declaration_assignment.iden);
-
-			if(isDecl==ERROR){
-				printf("Line: %d: error: Variable not declared in scope.\n",ast->line_num);
-				return ERROR;
-			}
-			
-			if (is_symobl_const(ast->declaration_assignment.iden)) {
-				printf("Line: %d: error: cannot assign a value to a constant variable.\n",ast->line_num);
-				return ERROR;
-			}
-
-
-
-			//We have to modify this to our own approach. Releated to predefined variableds 
-			if(ast->const_declaration_assignment.type->kind == VAR_NODE){
-				type = getState(ast->const_declaration_assignment.type->variable_exp.identifier);
-
-				if(type == ATTRIBUTE || type == UNIFORM){
-					printf("ERROR Cannot assign to pre defined read-only type line: %d\n", ast->declaration_assignment.line);
-					return ERROR;
-				}
-			}
-
-			//We have to modify this to our own approach. Releated to predefined variableds 
-			if(ast->declaration_assignment.value->kind == VAR_NODE){
-				type = getState(ast->declaration_assignment.value->variable_exp.identifier);
-
-				if(type == RESULT){
-					printf("ERROR Cannot Read from RESULT modified pre-defined variable line: %d\n", ast->declaration_assignment.line);
-					return ERROR;
-				}
-			}
-
-			if(exp2==exp1){
-				return exp2;
-			}
-
-			if(exp2==IVEC2 || exp2==IVEC3 || exp2==IVEC4){
-				if(exp1==INT){
-					return INT;
-				}
-			}
-
-			if(exp2==BVEC2 || exp2==BVEC3 || exp2==BVEC4){
-				if(exp1==BOOL){
-					return BOOL;
-				}
-			}
-
-			if(exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
-				if(exp1==FLOAT){
-					return FLOAT;
-				}
-			}
-
-
-			if(exp2!=exp1){
-				printf("Line: %d: error: TYPE MISMATCH\n",ast->line_num);
-				return ERROR;
-			}
-
-			if(exp2!=exp1){
-				printf("Line: %d: error: TYPE MISMATCH\n",ast->line_num);
-				return ERROR;
-			}
-
-			break;
-		//Eric necessary?
-		//Added constant to the prev case. 
-		case 25:
-			//printf("CONST_DECLARATION_ASSIGNMENT_NODE %d\n", kind);
-			exp2 = semantic_check(ast->const_declaration_assignment.type);
-			exp1 = semantic_check(ast->const_declaration_assignment.value);
-
-			if(exp1==ERROR || exp2 == ERROR)
-				return ERROR;
-
-			if(ast->const_declaration_assignment.type->kind == VAR_NODE){
-				type = getState(ast->const_declaration_assignment.type->variable_exp.identifier);
-				if(type == ATTRIBUTE || type == UNIFORM){
-					printf("ERROR Cannot assign to pre defined read-only type line: %d\n", ast->const_declaration_assignment.line);
-					return ERROR;
-				}
-			}
-
-			if(ast->const_declaration_assignment.value->kind == VAR_NODE){
-				type = getState(ast->const_declaration_assignment.value->variable_exp.identifier);
-
-				if(type == RESULT){
-					printf("ERROR Cannot Read from RESULT modified pre-defined variable line: %d.\n",ast->const_declaration_assignment.line);
-					return ERROR;
-				}
-			}
-
-			if(ast->const_declaration_assignment.value->kind == INT_NODE ||
-					ast->const_declaration_assignment.value->kind == BOOL_NODE ||
-					ast->const_declaration_assignment.value->kind == FLOAT_NODE ||
-					type == CONST_S || type == UNIFORM ) {
-				;
-			}else{
-				printf("ERROR const var must be initialized with a literal value or uniform variable line:%d\n",ast->const_declaration_assignment.line);
-				return ERROR;
-			}
-
-			if(exp2==exp1){
-				return exp2;
-			}
-
-			if(exp2==IVEC2 || exp2==IVEC3 || exp2==IVEC4){
-				if(exp1==INT){
-					return INT;
-				}
-			}
-
-			if(exp2==BVEC2 || exp2==BVEC3 || exp2==BVEC4){
-				if(exp1==BOOL){
-					return BOOL;
-				}
-			}
-
-			if(exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
-				if(exp1==FLOAT){
-					return FLOAT;
-				}
-			}
-
-			if(exp2!=exp1){
-				printf("ERROR types must match for assignement line:%d\n", ast->const_declaration_assignment.line);
-				return ERROR;
-			}
-
-			break;
-                        
 		case ARGUMENTS_NODE:
 			exp1 = semantic_check(ast->arguments.args);
 			exp2 = semantic_check(ast->arguments.expression);
@@ -857,13 +702,16 @@ int semantic_check(node *ast) {
 				return ERROR;
 			}
 			break;
+                        
 		case EXPRESSION_VARIABLE_NODE:
 			return semantic_check(ast->expression_variable);
 			break;
+                        
 		case UNKNOWN:
 			printf("Line: %d: error: UNKNOWN ERROR. You have successfully crashed the compiler!\n",ast->line_num);
 			return ERROR;
 			break;
+                        
 		default:
 			printf("Line: %d: error: DEFAULT ERROR. You have successfully crashed the compiler!\n",ast->line_num);
 			return ERROR;

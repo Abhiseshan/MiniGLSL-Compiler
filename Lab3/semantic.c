@@ -417,12 +417,21 @@ int semantic_check(node *ast) {
 			break;
 
 		case FUNCTION_NODE:
-			type = semantic_check(ast->function.arguments); //Need to figre out if it is printing if the argeuments passed into the function is right.
+			type = semantic_check(ast->function.args); //Need to figre out if it is printing if the argeuments passed into the function is right.
 			if(type==ERROR)
 				return ERROR;
 
 			if(ast->function.func_code == 2){ //rsq
-				return FLOAT;
+                            if(type==FLOAT){
+                                    return FLOAT;
+                            }
+                            if(type==INT){
+                                    return INT;
+                            }
+                            else {
+                                printf("Line: %d error: expecting int or float to function rsq, got %s", getTypeString(type));
+                                return ERROR;
+                            }
 			}else if(ast->function.func_code == 0){ //dp3
 				if(type==VEC4 || type == VEC3){
 					return FLOAT;
@@ -430,8 +439,16 @@ int semantic_check(node *ast) {
 				if(type==IVEC4 || type == IVEC3){
 					return INT;
 				}
+                                else {
+                                    printf("Line: %d error: expecting vec4, vec3, ivec4, or ivec3 to function dp3, got %s", getTypeString(type));
+                                    return ERROR;
+                                }
 			}else if (ast->function.func_code == 1){ //lit
-				return VEC4;
+                            if(type != VEC4)  {
+                                printf("Line: %d error: expecting vec4 to function lit, got %s", getTypeString(type));
+                                return ERROR;
+                            }
+                            return FLOAT;
 			}
 
 			printf("Line: %d: error: UNRECOGNIZED function %s\n",ast->line_num, getFuncString(ast->function.func_code));
@@ -545,32 +562,28 @@ int semantic_check(node *ast) {
 					}
 			}
 
-			if(exp2==exp1){
-				return exp2;
-			}
-
 			if(exp2==IVEC2 || exp2==IVEC3 || exp2==IVEC4){
 				if(exp1==INT){
-					return INT;
+					return exp2;
 				}
 			}
 
-			if(exp2==BVEC2 || exp2==BVEC3 || exp2==BVEC4){
+			else if(exp2==BVEC2 || exp2==BVEC3 || exp2==BVEC4){
 				if(exp1==BOOL){
-					return BOOL;
+					return exp2;
 				}
 			}
 
-			if(exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
+			else if(exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
 				if(exp1==FLOAT){
-					return FLOAT;
+					return exp2;
 				}
 			}
 
-			if(exp2!=exp1){
+			else {
 				printf("Line: %d: error: TYPE MISMATCH\n",ast->line_num);
 				return ERROR;
-			}
+                        }
 			break;
                             
 		case TYPE_NODE:
@@ -818,16 +831,14 @@ int semantic_check(node *ast) {
 			if(exp1==exp2){
 				return exp1;
 			}else{
-				printf("ERROR ARGUMENTS_COMMA_NODE line:%d\n", ast->arguments_comma.line);
+				printf("ERROR ARGUMENTS_COMMA_NODE line:%d\n", ast->line_num);
 				return ERROR;
 			}
 			break;
 		case EXPRESSION_VARIABLE_NODE:
-			//printf("ARGUMENTS_EXPRESSION_NODE %d\n", kind);
 			return semantic_check(ast->expression_variable);
 			break;
 		default:
-			//printf("DEFAULT!!\n");
 			return ERROR;
 			break;
 

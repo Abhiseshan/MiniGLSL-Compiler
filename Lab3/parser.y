@@ -160,13 +160,13 @@ statements
 
 declaration
   : type ID ';' 
-      { $$ = ast_allocate(DECLARATION_NODE, 0, $2, $1, NULL); 
+      { $$ = ast_allocate(DECLARATION_NODE, 0, $2, $1, NULL, yyline); 
         yTRACE("declaration -> type ID ;\n") }
   | type ID '=' expression ';'
-      { $$ = ast_allocate(DECLARATION_NODE, 0, $2, $1, $4); 
+      { $$ = ast_allocate(DECLARATION_NODE, 0, $2, $1, $4, yyline); 
         yTRACE("declaration -> type ID = expression ;\n") }
   | CONST type ID '=' expression ';'
-      { $$ = ast_allocate(DECLARATION_NODE, 1, $3, $2, $5);
+      { $$ = ast_allocate(DECLARATION_NODE, 1, $3, $2, $5, yyline);
         yTRACE("declaration -> CONST type ID = expression ;\n") }
   ;
 
@@ -287,7 +287,7 @@ expression
       { $$ = ast_allocate(NESTED_EXPRESSION_NODE, $2, yyline);
         yTRACE("expression -> ( expression ) \n")}
   | variable
-    { $$ = ast_allocate(EXPRESSION_VARIABLE_NODE, $1);
+    { $$ = ast_allocate(EXPRESSION_VARIABLE_NODE, $1, yyline);
       yTRACE("expression -> variable \n") }
   ;
 

@@ -725,7 +725,8 @@ int semantic_check(node *ast) {
 			}
 
 			if(isDecl!= -1){
-				errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Variable already declared.\n",ast->line_num);
+				errorOccurred = 1; 
+                                fprintf(errorFile,"Line: %d: error: Variable already declared.\n",ast->line_num);
 				return ERROR;
 			}else{
 				symbol_table_entry new_entry;
@@ -743,7 +744,8 @@ int semantic_check(node *ast) {
                             if(exp1 == exp2)
                                 return exp1;
                             else {
-                                errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Type mismatch.\n",ast->line_num); 
+                                errorOccurred = 1; 
+                                fprintf(errorFile,"Line: %d: error: Type mismatch.\n",ast->line_num); 
                                 return ERROR;
                             }
                         }
@@ -768,7 +770,8 @@ int semantic_check(node *ast) {
 			if(exp1==exp2){
 				return exp1;
 			}else{
-				errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Type mismatch. All arguments are not of the same type.\n",ast->line_num); 
+				errorOccurred = 1; 
+                                fprintf(errorFile,"Line: %d: error: Type mismatch. All arguments are not of the same type.\n",ast->line_num); 
 				return ERROR;
 			}
 			break;

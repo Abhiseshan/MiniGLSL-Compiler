@@ -21,4 +21,3 @@ void symbol_add(symbol_table_entry entry);
 symbol_table_entry* symbol_find(char *id);
 
 #endif
-

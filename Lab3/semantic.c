@@ -14,6 +14,17 @@ int checkPredefined(char* name) {
 	return 1;
 }
 
+int getBaseForTypeCode(int type_code) {
+	if (type_code < 4)
+		return 0;
+	else if (type_code < 8)
+		return 4;
+	else if (type_code < 12)
+		return 8;
+	else
+		return ERROR;
+}
+
 int checkDepth( node *ast) {
 
 	if(ast==NULL)
@@ -594,6 +605,14 @@ int semantic_check(node *ast) {
                         
 		case ASSIGNMENT_NODE:
 			// set type of symbol in local var
+<<<<<<< HEAD
+			name = ast->assignment.left->variable_exp.identifier;
+
+			//Symbol find? 
+
+			exp2 = getTypeCode(ast->type_node.base, ast->type_node.size)
+			exp1 = semantic_check(ast->assignment.right);
+=======
 			node *var = ast->assignment.var;
                         if(var->kind == VARIABLE_NODE)
                             name = var->variable.id;
@@ -609,6 +628,7 @@ int semantic_check(node *ast) {
                         ast->assignment.type = entry->type_code;
                         
 			exp1 = semantic_check(ast->assignment.expression);
+>>>>>>> ac5543c8e53b9bc8e0eeabe6e682ed0140f2738f
 
 			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
@@ -826,8 +846,12 @@ int semantic_check(node *ast) {
 			//printf("ARGUMENTS_EXPRESSION_NODE %d\n", kind);
 			return semantic_check(ast->expression_variable);
 			break;
+		case UNKNOWN:
+			printf("Line: %d: error: UNKNOWN ERROR. You have sucessfully crashed the compiler!\n",ast->line_num);
+			return ERROR;
+			break;
 		default:
-			//printf("DEFAULT!!\n");
+			printf("Line: %d: error: DEFAULT ERROR. You have sucessfully crashed the compiler!\n",ast->line_num);
 			return ERROR;
 			break;
 

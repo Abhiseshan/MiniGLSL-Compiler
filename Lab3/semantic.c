@@ -7,6 +7,8 @@ int semantic_check( node *ast) {
   return 0; // failed checks
 }*/
 
+int isInIf=0;
+
 int checkPredefined(char* name) {
 	if (strcmp(name, "gl_FragColor") || strcmp(name, "gl_FragDepth") || strcmp(name, "gl_FragCoord") || strcmp(name, "gl_TexCoord") || strcmp(name, " gl_Color")  || 
 		strcmp(name, "gl_Secondary") || strcmp(name, "gl_FogFragCoord") || strcmp(name, "gl_Light_Half") || strcmp(name, " gl_Light_Ambient") || 
@@ -16,6 +18,28 @@ int checkPredefined(char* name) {
 
 	return 1;
 }
+
+bool isAttribute(char* name){
+	if (strcmp(name, "gl_TexCoord") || strcmp(name, "gl_Color") || strcmp(name, "gl_Secondary") || strcmp(name, "gl_FogFragCoord"))
+		return true;
+	return false;
+}
+
+bool isUniform(char* name){
+	if (strcmp(name, "gl_Light_Half") || strcmp(name, "gl_Light_Ambient") || strcmp(name, "gl_Material_Shininess") || strcmp(name, "env1") 
+		|| strcmp(name, "env2") || strcmp(name, "env3"))
+		return true;
+	return false;
+}
+
+bool isResult(char* name){
+	if (strcmp(name, "gl_FragColor") || strcmp(name, "gl_FragDepth") || strcmp(name, "gl_FragCoord"))
+		return true;
+	return false;
+}
+
+
+
 
 int getBaseForTypeCode(int type_code) {
 	if (type_code < 4)
@@ -602,7 +626,9 @@ int semantic_check(node *ast) {
 			break;
                         
 		case IF_STATEMENT_NODE:
-			exp2 = semantic_check(ast->if_statement.cond);
+
+			isInIf++:
+			exp2 = semantic_check(ast->if_statement.condition);
 
 			if(exp2 == ERROR)
 				return ERROR;
@@ -614,6 +640,7 @@ int semantic_check(node *ast) {
 			if(ast->if_statement.else_statement != NULL) 
                             semantic_check(ast->if_statement.else_statement);
 			semantic_check(ast->if_statement.then_statement);
+			isInIf--:
 			break;
                         
 		case ASSIGNMENT_NODE:
@@ -631,19 +658,27 @@ int semantic_check(node *ast) {
                         }
                         exp2 = entry->vec;
                         ast->assignment.type = (type_code) entry->type_code;
-                        
+  
 			exp1 = semantic_check(ast->assignment.expression);
 
 			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
-			if(checkPredefined(ast->assignment.expression.variable.id)==1){
-				printf("Line: %d: error: INVALID ASSIGNMENT, trying to assign to a const or read-only variable %d\n",ast->line_num);
+			char* expressionName;
+			node* expression= ast->assignment.expression;
+
+			if(expression->kind == VARIABLE_NODE)
+				expressionName= expression->variable.id;
+			else
+				expressionName= expression->var->array_index.id;		
+
+			if(isAttribute(name) || isUniform(name)){
+				printf("Line: %d: error: INVALID ASSIGNMENT, trying to write to a read-only variable %d\n",ast->line_num);
 				return ERROR;
 			}
 
-			if(checkPredefined(ast->assignment.var.variable.id)==1){
-				printf("ERROR Cannot Read from RESULT modified pre-defined variable line: %d \n",ast->assignment.line);
+			if(isResult(expressionName) && isInIf!=0){
+				printf("Line: %d: error: INVALID ASSIGNMENT, trying to read from a write-only variable %d\n",ast->line_num);
 				return ERROR;
 			}
 			

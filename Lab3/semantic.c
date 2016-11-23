@@ -33,7 +33,7 @@ int checkDepth( node *ast) {
 	if(ast==NULL)
 		return 0;
 
-	int kind, depth = 0;
+	int kind;
 	kind = ast->kind;
 
 	switch(kind){
@@ -96,18 +96,19 @@ int semantic_check(node *ast) {
 	int kind;
 	int type;
 	int depth;
-	int tmp;
 	int exp1, exp2;
 	char * name;
 	int index;
 	kind = ast->kind;
 	int isDecl=0;
+        symbol_table_entry *entry;
+        node *var;
 
 	switch(kind){
 		case ENTER_SCOPE_NODE:
 			in_scope++;
 			scope_enter();
-			exp1 = semantic_check(ast->enter_scope->scope);
+			exp1 = semantic_check(ast->enter_scope);
 			scope_exit();
 			in_scope--;
 			return exp1;
@@ -143,7 +144,7 @@ int semantic_check(node *ast) {
 			return exp2;
 			break;
                         
-		case NESTED_EXPRESSION:
+		case NESTED_EXPRESSION_NODE:
 			return semantic_check(ast->nested_expression);
 			break;
 
@@ -157,7 +158,7 @@ int semantic_check(node *ast) {
 				case MINUS_OP:
 					if(exp1 == BOOL || exp1==BVEC2|| exp1==BVEC3|| exp1==BVEC4){
 						printf("Line: %d: error: found BOOL, expecting INT or FLOAT\n",ast->line_num);						
-						eturn ERROR;
+						return ERROR;
 					} else{
 						return exp1;
 					}
@@ -349,8 +350,7 @@ int semantic_check(node *ast) {
 			break;
                         
 		case VARIABLE_NODE:
-			int type;
-			type = checkDeclaredInScope(ast->variable.id);
+			type = symbol_exists_in_this_scope(ast->variable.id);
 			if(type==ERROR){
 				printf("Line: %d: error: UNDEFINED VARIABLE, %s not defined in scope before it is used.\n",ast->line_num, ast->variable.id);						
 				return ERROR;
@@ -360,69 +360,69 @@ int semantic_check(node *ast) {
 			break;
 
 		case ARRAY_INDEX_NODE:
-                        symbol_table_entry *entry = symbol_find(ast->array_index.id);
-                        int type_code = entry->type_code;
-                        ast->array_index.type = type_code;
+                        entry = symbol_find(ast->array_index.id);
+                        type = entry->type_code;
+                        ast->array_index.type = (type_code) type;
 
 			index = ast->array_index.index;
-			switch(type_code){
-			case IVEC2:
-				if(index>=2 || index < 0){
-					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
-					return ERROR;
-				}
-				break;
-			case IVEC3:
-				if(index>=3 || index < 0){
-					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
-					return ERROR;
-				}
-				break;
-			case IVEC4:
-				if(index>=4 || index < 0){
-					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
-					return ERROR;
-				}
-				break;
-			case BVEC2:
-				if(index>=2 || index < 0){
-					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
-					return ERROR;
-				}
-				break;
-			case BVEC3:
-				if(index>=3 || index < 0){
-					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
-					return ERROR;
-				}
-				break;
-			case BVEC4:
-				if(index>=4 || index < 0){
-					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
-					return ERROR;
-				}
-				break;
-			case VEC2:
-				if(index>=2 || index < 0){
-					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
-					return ERROR;
-				}
-				break;
-			case VEC3:
-				if(index>=3 || index < 0){
-					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
-					return ERROR;
-				}
-				break;
-			case VEC4:
-				if(index>=4 || index < 0){
-					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
-					return ERROR;
-				}
-				break;
-			default:
-					printf("Line: %d: error: Cannot read index of scalar data types\n",ast->line_num);
-				return ERROR;
+			switch(type){
+                            case IVEC2:
+                                    if(index>=2 || index < 0){
+                                            printf("Line: %d: error: Index out of bounds\n",ast->line_num);
+                                            return ERROR;
+                                    }
+                                    break;
+                            case IVEC3:
+                                    if(index>=3 || index < 0){
+                                            printf("Line: %d: error: Index out of bounds\n",ast->line_num);
+                                            return ERROR;
+                                    }
+                                    break;
+                            case IVEC4:
+                                    if(index>=4 || index < 0){
+                                            printf("Line: %d: error: Index out of bounds\n",ast->line_num);
+                                            return ERROR;
+                                    }
+                                    break;
+                            case BVEC2:
+                                    if(index>=2 || index < 0){
+                                            printf("Line: %d: error: Index out of bounds\n",ast->line_num);
+                                            return ERROR;
+                                    }
+                                    break;
+                            case BVEC3:
+                                    if(index>=3 || index < 0){
+                                            printf("Line: %d: error: Index out of bounds\n",ast->line_num);
+                                            return ERROR;
+                                    }
+                                    break;
+                            case BVEC4:
+                                    if(index>=4 || index < 0){
+                                            printf("Line: %d: error: Index out of bounds\n",ast->line_num);
+                                            return ERROR;
+                                    }
+                                    break;
+                            case VEC2:
+                                    if(index>=2 || index < 0){
+                                            printf("Line: %d: error: Index out of bounds\n",ast->line_num);
+                                            return ERROR;
+                                    }
+                                    break;
+                            case VEC3:
+                                    if(index>=3 || index < 0){
+                                            printf("Line: %d: error: Index out of bounds\n",ast->line_num);
+                                            return ERROR;
+                                    }
+                                    break;
+                            case VEC4:
+                                    if(index>=4 || index < 0){
+                                            printf("Line: %d: error: Index out of bounds\n",ast->line_num);
+                                            return ERROR;
+                                    }
+                                    break;
+                            default:
+                                            printf("Line: %d: error: Cannot read index of scalar data types\n",ast->line_num);
+                                    return ERROR;
 			}
 
 			break;
@@ -440,7 +440,7 @@ int semantic_check(node *ast) {
                                     return INT;
                             }
                             else {
-                                printf("Line: %d error: expecting int or float to function rsq, got %s", getTypeString(type));
+                                printf("Line: %d error: expecting int or float to function rsq, got %s", ast->line_num, getTypeString(type));
                                 return ERROR;
                             }
 			}else if(ast->function.func_code == 0){ //dp3
@@ -451,12 +451,12 @@ int semantic_check(node *ast) {
 					return INT;
 				}
                                 else {
-                                    printf("Line: %d error: expecting vec4, vec3, ivec4, or ivec3 to function dp3, got %s", getTypeString(type));
+                                    printf("Line: %d error: expecting vec4, vec3, ivec4, or ivec3 to function dp3, got %s",ast->line_num, getTypeString(type));
                                     return ERROR;
                                 }
 			}else if (ast->function.func_code == 1){ //lit
                             if(type != VEC4)  {
-                                printf("Line: %d error: expecting vec4 to function lit, got %s", getTypeString(type));
+                                printf("Line: %d error: expecting vec4 to function lit, got %s",ast->line_num, getTypeString(type));
                                 return ERROR;
                             }
                             return FLOAT;
@@ -474,7 +474,7 @@ int semantic_check(node *ast) {
 			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
-			depth = checkDepth(ast->constructor.arguments);
+			depth = checkDepth(ast->constructor.args);
 
 			switch(exp2){
 				case IVEC2:
@@ -598,11 +598,11 @@ int semantic_check(node *ast) {
 			break;
                             
 		case TYPE_NODE:
-			return ast->type.type_code;
+			return ast->type_node.type;
 			break;
                         
 		case IF_STATEMENT_NODE:
-			exp2 = semantic_check(ast->if_statement.condition);
+			exp2 = semantic_check(ast->if_statement.cond);
 
 			if(exp2 == ERROR)
 				return ERROR;
@@ -618,19 +618,19 @@ int semantic_check(node *ast) {
                         
 		case ASSIGNMENT_NODE:
 
-			node *var = ast->assignment.var;
+			var = ast->assignment.var;
                         if(var->kind == VARIABLE_NODE)
                             name = var->variable.id;
                         else
                             name = var->array_index.id;
 
-                        symbol_table_entry *entry = symbol_find(name);
+                        entry = symbol_find(name);
                         if(entry == NULL) {
-                            printf("Line: %d: error: INVALID ASSIGNMENT, variable %s not defined %d\n", name, ast->line_num);
+                            printf("Line: %d: error: INVALID ASSIGNMENT, variable %s not defined\n", ast->line_num, name);
                             return ERROR;
                         }
                         exp2 = entry->vec;
-                        ast->assignment.type = entry->type_code;
+                        ast->assignment.type = (type_code) entry->type_code;
                         
 			exp1 = semantic_check(ast->assignment.expression);
 
@@ -665,10 +665,10 @@ int semantic_check(node *ast) {
 			break;
                         
 		case DECLARATION_NODE:
-			isDecl = symbol_exists_in_scope(ast->declaration.id);
+			isDecl = symbol_exists_in_this_scope(ast->declaration.id);
 
 			if (checkPredefined(ast->declaration.id) == ERROR) {
-				printf("line: %d: error: Cannot declare Pre-defined variables\n", );
+				printf("line: %d: error: Cannot declare Pre-defined variables\n", ast->line_num);
 				return ERROR;
 			}
 

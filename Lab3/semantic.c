@@ -209,7 +209,7 @@ int semantic_check(node *ast) {
 					printf("Line: %d: error: TYPE MISMATCH, operation can only be performed on vectors of same size\n",ast->line_num);						
 					return ERROR;
 				}
-			}9
+			}
 
 			//comparison operators
 			if(ast->binary_expr.op==LT_OP ||ast->binary_expr.op==LEQ_OP || ast->binary_expr.op==GT_OP || ast->binary_expr.op==GEQ_OP){

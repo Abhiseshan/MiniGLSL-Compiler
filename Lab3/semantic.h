@@ -3,6 +3,7 @@
 
 #include "ast.h"
 #include "symbol.h"
+#include "common.h"
 
 #define ERROR -1
 

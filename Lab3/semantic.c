@@ -1,13 +1,16 @@
 #include "semantic.h"
-
+#include <cstddef>
+#include <stdio.h>
+#include <string.h>
+/*
 int semantic_check( node *ast) {
   return 0; // failed checks
-}
+}*/
 
 int checkPredefined(char* name) {
-	if strcmp(name, "gl_FragColor") || strcmp(name, "gl_FragDepth") || strcmp(name, "gl_FragCoord") || strcmp(name, "gl_TexCoord") || strcmp(name, " gl_Color")  || 
+	if (strcmp(name, "gl_FragColor") || strcmp(name, "gl_FragDepth") || strcmp(name, "gl_FragCoord") || strcmp(name, "gl_TexCoord") || strcmp(name, " gl_Color")  || 
 		strcmp(name, "gl_Secondary") || strcmp(name, "gl_FogFragCoord") || strcmp(name, "gl_Light_Half") || strcmp(name, " gl_Light_Ambient") || 
-		strcmp(name, "gl_Material_Shininess") || strcmp(name, "env1") || strcmp(name, "env2") || strcmp(name, "env3")
+		strcmp(name, "gl_Material_Shininess") || strcmp(name, "env1") || strcmp(name, "env2") || strcmp(name, "env3"))
 
 		return ERROR;
 
@@ -34,50 +37,47 @@ int checkDepth( node *ast) {
 	kind = ast->kind;
 
 	switch(kind){
-	case EXPRESSION_NODE:
-		return 1;
-		break;
-	case PREN_EXPRESSION_NODE:
-		return 1;
-		break;
-	case UNARY_EXPRESION_NODE:
-		return 1;
-		break;
-	case BINARY_EXPRESSION_NODE:
-		return 1;
-		break;
-	case INT_NODE:
-		return 1;
-		break;
-	case FLOAT_NODE:
-		return 1;
-		break;
-	case BOOL_NODE:
-		return 1;
-		break;
-	case IDENT_NODE:
-		return 1;
-		break;
-	case VAR_NODE:
-		return 1;
-		break;
-	case ARRAY_NODE:
-		return 1;
-		break;
-	case FUNCTION_NODE:
-		return 1;
-		break;
-	case CONSTRUCTOR_NODE:
-		return 1;
-		break;
-	case ARGUMENTS_NODE:
-                if(ast->arguments.args == NULL) return 1;
-		return 1 + checkDepth(ast->arguments.args);
-		break;
-	default :
-		printf("check depth failed: %d\n", kind);
-		return ERROR;
-		break;
+            case NESTED_EXPRESSION_NODE:
+                    return 1;
+                    break;
+            case UNARY_EXPRESION_NODE:
+                    return 1;
+                    break;
+            case BINARY_EXPRESSION_NODE:
+                    return 1;
+                    break;
+            case INT_NODE:
+                    return 1;
+                    break;
+            case BOOL_NODE:
+                    return 1;
+                    break;
+            case FLOAT_NODE:
+                    return 1;
+                    break;
+            case VARIABLE_NODE:
+                    return 1;
+                    break;
+            case ARRAY_INDEX_NODE:
+                    return 1;
+                    break;
+            case FUNCTION_NODE:
+                    return 1;
+                    break;
+            case CONSTRUCTOR_NODE:
+                    return 1;
+                    break;
+            case EXPRESSION_VARIABLE_NODE:
+                    return 1;
+                    break;
+            case ARGUMENTS_NODE:
+                    if(ast->arguments.args == NULL) return 1;
+                    return 1 + checkDepth(ast->arguments.args);
+                    break;
+            default :
+                    printf("check depth failed: %d\n", kind);
+                    return ERROR;
+                    break;
 	}
 
 	return 0;
@@ -89,7 +89,7 @@ int in_scope=0;
 int semantic_check(node *ast) {
 
 	if(ast==NULL) {
-            fprintf(errorFile,"Semantic function visited a NULL node\n");
+            printf("Semantic function visited a NULL node\n");
             return ERROR;
         }
 
@@ -107,7 +107,7 @@ int semantic_check(node *ast) {
 		case ENTER_SCOPE_NODE:
 			in_scope++;
 			scope_enter();
-			exp1 = semantic_check(ast->enter_scope.scope);
+			exp1 = semantic_check(ast->enter_scope->scope);
 			scope_exit();
 			in_scope--;
 			return exp1;

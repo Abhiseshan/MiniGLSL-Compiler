@@ -604,31 +604,22 @@ int semantic_check(node *ast) {
 			break;
                         
 		case ASSIGNMENT_NODE:
-			// set type of symbol in local var
-<<<<<<< HEAD
-			name = ast->assignment.left->variable_exp.identifier;
 
-			//Symbol find? 
-
-			exp2 = getTypeCode(ast->type_node.base, ast->type_node.size)
-			exp1 = semantic_check(ast->assignment.right);
-=======
 			node *var = ast->assignment.var;
-                        if(var->kind == VARIABLE_NODE)
-                            name = var->variable.id;
-                        else
-                            name = var->array_index.id;
-                        
-                        symbol_table_entry *entry = symbol_find(name);
-                        if(entry == NULL) {
-                            printf("Line: %d: error: INVALID ASSIGNMENT, variable %s not defined %d\n", name, ast->line_num);
-                            return ERROR;
-                        }
-                        exp2 = entry->vec;
-                        ast->assignment.type = entry->type_code;
+            if(var->kind == VARIABLE_NODE)
+                name = var->variable.id;
+            else
+                name = var->array_index.id;
+            
+            symbol_table_entry *entry = symbol_find(name);
+            if(entry == NULL) {
+                printf("Line: %d: error: INVALID ASSIGNMENT, variable %s not defined %d\n", name, ast->line_num);
+                return ERROR;
+            }
+            exp2 = entry->vec;
+            ast->assignment.type = entry->type_code;
                         
 			exp1 = semantic_check(ast->assignment.expression);
->>>>>>> ac5543c8e53b9bc8e0eeabe6e682ed0140f2738f
 
 			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
@@ -658,11 +649,10 @@ int semantic_check(node *ast) {
 			}
 
 			return exp2;
-
 			break;
                         
 		case NESTED_SCOPE_NODE:
-                        return semantic_check(ast->nested_scope);
+            return semantic_check(ast->nested_scope);
 			break;
                         
 		case DECLARATION_NODE:

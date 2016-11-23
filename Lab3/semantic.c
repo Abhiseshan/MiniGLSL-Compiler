@@ -624,8 +624,18 @@ int semantic_check(node *ast) {
 			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
+			if(checkPredefined(ast->assignment.expression.variable.id)==1){
+				printf("Line: %d: error: INVALID ASSIGNMENT, trying to assign to a const or read-only variable %d\n",ast->line_num);
+				return ERROR;
+			}
+
+			if(checkPredefined(ast->assignment.var.variable.id)==1){
+				printf("ERROR Cannot Read from RESULT modified pre-defined variable line: %d \n",ast->assignment.line);
+				return ERROR;
+			}
+
 			//We have to modify this to our own approach. Releated to predefined variableds 
-			if(ast->assignment.left->kind == VAR_NODE){
+			/*if(ast->assignment.left->kind == VAR_NODE){
 				type = getState(ast->assignment.left->variable_exp.identifier);
 				if(type == ATTRIBUTE || type == UNIFORM || type==CONST_S){
 					printf("Line: %d: error: INVALID ASSIGNMENT, trying to assign to a const or read-only variable %d\n",ast->line_num);
@@ -641,7 +651,7 @@ int semantic_check(node *ast) {
 					printf("ERROR Cannot Read from RESULT modified pre-defined variable line: %d \n",ast->assignment.line);
 					return ERROR;
 				}
-			}
+			}*/
 
 			if(exp2!=exp1){
 				printf("Line: %d: error: TYPE MISMATCH\n",ast->line_num);
@@ -697,6 +707,8 @@ int semantic_check(node *ast) {
 				printf("Line: %d: error: cannot assign a value to a constant variable.\n",ast->line_num);
 				return ERROR;
 			}
+
+
 
 			//We have to modify this to our own approach. Releated to predefined variableds 
 			if(ast->const_declaration_assignment.type->kind == VAR_NODE){

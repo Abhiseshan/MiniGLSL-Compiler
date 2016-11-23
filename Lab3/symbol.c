@@ -5,7 +5,7 @@
 #include "symbol.h"
 
 symbol_table_entry* stack = NULL;
-
+#define ERROR -1
 /**
  * Add a parent to the stack
  */

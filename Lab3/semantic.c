@@ -1,8 +1,8 @@
 #include "semantic.h"
 
-/*int semantic_check( node *ast) {
+int semantic_check( node *ast) {
   return 0; // failed checks
-}*/
+}
 
 int checkPredefined(char* name) {
 	if strcmp(name, "gl_FragColor") || strcmp(name, "gl_FragDepth") || strcmp(name, "gl_FragCoord") || strcmp(name, "gl_TexCoord") || strcmp(name, " gl_Color")  || 
@@ -59,11 +59,9 @@ int checkDepth( node *ast) {
 	case CONSTRUCTOR_NODE:
 		return 1;
 		break;
-	case ARGUMENTS_COMMA_NODE:
-		return 1 + checkDepth(ast->arguments_comma.arguments);
-		break;
-	case ARGUMENTS_EXPRESSION_NODE:
-		return checkDepth(ast->arguments_expression.expression);
+	case ARGUMENTS_NODE:
+                if(ast->arguments.args == NULL) return 1;
+		return 1 + checkDepth(ast->arguments.args);
 		break;
 	default :
 		printf("check depth failed: %d\n", kind);
@@ -172,19 +170,17 @@ int semantic_check(node *ast) {
 					}
 					break;
 			}
-
 			break;
+                        
 		case BINARY_EXPRESSION_NODE:
-			//printf("BINARY_EXPRESSION_NODE %d\n", kind);
-			//printf("Operator: %d\n", ast->binary_expr.op);
-			exp2 = semantic_check(ast->binary_expr.left);
-			exp1 = semantic_check(ast->binary_expr.right);
+			exp2 = semantic_check(ast->binary.left);
+			exp1 = semantic_check(ast->binary.right);
 
 			if(exp1 == ERROR || exp2 == ERROR)
 				return ERROR;
 
 			//Logical operators
-			if(ast->binary_expr.op==AND_OP || ast->binary_expr.op==OR_OP){
+			if(ast->binary.op==AND_OP || ast->binary.op==OR_OP){
 				if(exp2==BOOL && exp1==BOOL){
 					return BOOL;
 				}else if(exp2==BVEC2 && exp1==BVEC2){
@@ -212,10 +208,10 @@ int semantic_check(node *ast) {
 			}
 
 			//comparison operators
-			if(ast->binary_expr.op==LT_OP ||ast->binary_expr.op==LEQ_OP || ast->binary_expr.op==GT_OP || ast->binary_expr.op==GEQ_OP){
+			if(ast->binary.op==LT_OP ||ast->binary.op==LEQ_OP || ast->binary.op==GT_OP || ast->binary.op==GEQ_OP){
 				if(exp2==INT && exp1==INT){
 					return INT;
-				}else if(exp2==FLOAT && exp1 == FLOAT){
+				}else if(exp2==FLOAT && exp1==FLOAT){
 					return FLOAT;
 				}else if(exp2==BOOL || exp1==BOOL){
 					printf("Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
@@ -244,7 +240,7 @@ int semantic_check(node *ast) {
 				}
 			}
 
-			if(ast->binary_expr.op==EQ_OP || ast->binary_expr.op==NEQ_OP){
+			if(ast->binary.op==EQ_OP || ast->binary.op==NEQ_OP){
 				if(exp2==exp1){
 					if(exp2==BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
 						printf("Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
@@ -256,7 +252,7 @@ int semantic_check(node *ast) {
 			}
 
 			//arithmetic operators add and sub
-			if(ast->binary_expr.op==ADD_OP || ast->binary_expr.op==SUB_OP){
+			if(ast->binary.op==ADD_OP || ast->binary.op==SUB_OP){
 				if(exp2==INT && exp1==INT){
 					return INT;
 				}else if(exp2==FLOAT && exp1==FLOAT){
@@ -286,7 +282,7 @@ int semantic_check(node *ast) {
 			}
 
 			//arithmetic operator mult
-			if(ast->binary_expr.op==MULT_OP){
+			if(ast->binary.op==MULT_OP){
 				if(exp2 == INT && (exp1==INT || exp1==IVEC2 || exp1==IVEC3 || exp1==IVEC4)){
 					return exp1;
 				}else if(exp1 == INT && (exp2==INT || exp2==IVEC2 || exp2==IVEC3 || exp2==IVEC4)){
@@ -310,7 +306,7 @@ int semantic_check(node *ast) {
 			}
 
 			//arithmetic operator /,^
-			if(ast->binary_expr.op==DIV_OP || ast->binary_expr.op==POW_OP){
+			if(ast->binary.op==DIV_OP || ast->binary.op==POW_OP){
 				if(exp2==INT && exp1==INT){
 					return INT;
 				}else if(exp2==FLOAT && exp1==FLOAT){
@@ -329,33 +325,23 @@ int semantic_check(node *ast) {
 					return ERROR;
 				}
 			}
-
 			break;
+                        
 		case INT_NODE:
-			//printf("INT_NODE %d\n", kind);
-			//printf("Integer: %d\n",ast->int_literal.right);
 			return INT;
 			break;
 		case FLOAT_NODE:
-			//printf("FLOAT_NODE %d\n", kind);
-			//printf("Float: %f", ast->float_literal.right);
 			return FLOAT;
 			break;
 		case BOOL_NODE:
-			//printf("BOOL_NODE %d\n", kind);
-			//printf("Bool: %d", ast->bool_literal.right);
 			return BOOL;
 			break;
-		case IDENT_NODE:
-			//printf("IDENT_NODE No node %d\n", kind);
-			// No IDENT_NODE
-			break;
+                        
 		case VARIABLE_NODE:
 			int type;
-			type = checkDeclaredInScope(ast->variable_exp.identifier);
-			//printf("VAR_NODE %d\n", kind);
+			type = checkDeclaredInScope(ast->variable.id);
 			if(type==ERROR){
-				printf("Line: %d: error: UNDEFINED VARIABLE, %s not defined in scope before it is used.\n",ast->line_num, ast->variable_exp.identifier);						
+				printf("Line: %d: error: UNDEFINED VARIABLE, %s not defined in scope before it is used.\n",ast->line_num, ast->variable.id);						
 				return ERROR;
 			}else{
 				return type;
@@ -363,14 +349,12 @@ int semantic_check(node *ast) {
 			break;
 
 		case ARRAY_INDEX_NODE:
-			//printf("ARRAY_NODE %d\n", kind);
-			name = ast->array_exp.identifier;
-			//type = getType(name);
+                        symbol_table_entry *entry = symbol_find(ast->array_index.id);
+                        int type_code = entry->type_code;
+                        ast->array_index.type = type_code;
 
-			type = getTypeCode(ast->type_node.base, ast->type_node.size)
-
-			index = ast->array_exp.index;
-			switch(type){
+			index = ast->array_index.index;
+			switch(type_code){
 			case IVEC2:
 				if(index>=2 || index < 0){
 					printf("Line: %d: error: Index out of bounds\n",ast->line_num);
@@ -433,38 +417,36 @@ int semantic_check(node *ast) {
 			break;
 
 		case FUNCTION_NODE:
-			//printf("FUNCTION_NODE %d\n", kind);
-			type = semantic_check(ast->function_exp.arguments); //Need to figre out if it is printing if the argeuments passed into the function is right.
+			type = semantic_check(ast->function.arguments); //Need to figre out if it is printing if the argeuments passed into the function is right.
 			if(type==ERROR)
 				return ERROR;
 
-			if(ast->function_exp.function_name == 2){ //rsq
+			if(ast->function.func_code == 2){ //rsq
 				return FLOAT;
-			}else if(ast->function_exp.function_name == 0){ //dp3
+			}else if(ast->function.func_code == 0){ //dp3
 				if(type==VEC4 || type == VEC3){
 					return FLOAT;
 				}
 				if(type==IVEC4 || type == IVEC3){
 					return INT;
 				}
-			}else if (ast->function_exp.function_name == 1){ //lit
+			}else if (ast->function.func_code == 1){ //lit
 				return VEC4;
 			}
 
-			printf("Line: %d: error: UNRECOGNIZED function %s\n",ast->line_num, getFuncString(ast->function_exp.function_name));
+			printf("Line: %d: error: UNRECOGNIZED function %s\n",ast->line_num, getFuncString(ast->function.func_code));
 			return ERROR;
 
 			break;
 
 		case CONSTRUCTOR_NODE:
-			//printf("CONSTRUCTOR_NODE %d\n", kind);
-			exp2 = semantic_check(ast->constructor_exp.type);
-			exp1 = semantic_check(ast->constructor_exp.arguments);
+			exp2 = semantic_check(ast->constructor.type);
+			exp1 = semantic_check(ast->constructor.args);
 
 			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
-			depth = checkDepth(ast->constructor_exp.arguments);
+			depth = checkDepth(ast->constructor.arguments);
 
 			switch(exp2){
 				case IVEC2:
@@ -590,39 +572,45 @@ int semantic_check(node *ast) {
 				return ERROR;
 			}
 			break;
-
-		//Eric ? TYPE_NODE? 
+                            
 		case TYPE_NODE:
-			//printf("TYPE_NODE %d\n", kind);
-			return ast->type.base;
+			return ast->type.type_code;
 			break;
-		//Eric this and the next
+                        
 		case IF_STATEMENT_NODE:
-			//printf("IF_ELSE_STATEMENT_NODE %d\n", kind);
 			exp2 = semantic_check(ast->if_statement.condition);
 
 			if(exp2 == ERROR)
 				return ERROR;
 
 			if(exp2!=BOOL){
-				printf("ERROR: Expression must evaluate to bool line: %d\n", ast->if_else_statement.line);
+				printf("ERROR: Expression must evaluate to bool line: %d\n", ast->line_num);
 				return ERROR;
 			}
 			if(ast->if_statement.else_statement != NULL) 
                             semantic_check(ast->if_statement.else_statement);
 			semantic_check(ast->if_statement.then_statement);
 			break;
-		//Eric correct the ast pointers
+                        
 		case ASSIGNMENT_NODE:
-			//printf("ASSIGNMENT_NODE %d\n", kind);
-			tmp = semantic_check(ast->assignment.left);
 			// set type of symbol in local var
-			name = ast->assignment.left->variable_exp.identifier;
+			node *var = ast->assignment.var;
+                        if(var->kind == VARIABLE_NODE)
+                            name = var->variable.id;
+                        else
+                            name = var->array_index.id;
+                        
+                        symbol_table_entry *entry = symbol_find(name);
+                        if(entry == NULL) {
+                            printf("Line: %d: error: INVALID ASSIGNMENT, variable %s not defined %d\n", name, ast->line_num);
+                            return ERROR;
+                        }
+                        exp2 = entry->vec;
+                        ast->assignment.type = entry->type_code;
+                        
+			exp1 = semantic_check(ast->assignment.expression);
 
-			exp2 = getTypeCode(ast->type_node.base, ast->type_node.size)
-			exp1 = semantic_check(ast->assignment.right);
-
-			if(exp1==ERROR || exp2 == ERROR || tmp ==ERROR)
+			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 
 			//We have to modify this to our own approach. Releated to predefined variableds 
@@ -644,68 +632,44 @@ int semantic_check(node *ast) {
 				}
 			}
 
-			//Find if the declared variable
-			if(ast->ass)
-
-			if(exp2==exp1){
-				return exp2;
-			}
-
-			if(exp2==IVEC2 || exp2==IVEC3 || exp2==IVEC4){
-				if(exp1==INT){
-					return INT;
-				}
-			}
-
-			if(exp2==BVEC2 || exp2==BVEC3 || exp2==BVEC4){
-				if(exp1==BOOL){
-					return BOOL;
-				}
-			}
-
-			if(exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
-				if(exp1==FLOAT){
-					return FLOAT;
-				}
-			}
-
-
 			if(exp2!=exp1){
 				printf("Line: %d: error: TYPE MISMATCH\n",ast->line_num);
 				return ERROR;
 			}
 
-			break;
-		case NESTED_SCOPE_NODE:
-                    return semantic_check(ast->nested_scope);
-			break;
-		case DECLARATION_NODE:
-			//printf("DECLARATION_NODE %d\n", kind);
-			isDecl = checkExists(ast->declaration.iden,in_scope, ast->declaration.line);
+			return exp2;
 
-			if (checkPredefined(ast->declaration.iden) == ERROR) {
+			break;
+                        
+		case NESTED_SCOPE_NODE:
+                        return semantic_check(ast->nested_scope);
+			break;
+                        
+		case DECLARATION_NODE:
+			isDecl = symbol_exists_in_scope(ast->declaration.id);
+
+			if (checkPredefined(ast->declaration.id) == ERROR) {
 				printf("line: %d: error: Cannot declare Pre-defined variables\n", );
 				return ERROR;
 			}
 
-			if(isDecl!=ERROR){
+			if(isDecl==ERROR){
 				printf("Line: %d: error: Variable already declared.\n",ast->line_num);
 				return ERROR;
 			}else{
-
 				symbol_table_entry new_entry;
 				new_entry.id = ast->declaration.id;
 		  		new_entry.is_const = ast->declaration.is_const;
-		  		new_entry.type_code = ast->declaration.type_node->type.type_code;
-		  		new_entry.vec = ast->declaration.type_node->type.vec;
-		  		//new_entry.is_init = ?
+		  		new_entry.type_code = ast->declaration.type->type_node.type;
+		  		new_entry.vec = getBaseForTypeCode(new_entry.type_code);
+		  		new_entry.is_init = ast->declaration.expression == NULL ? 0 : 1;
 		  		symbol_add(new_entry);
 
 				return semantic_check(ast->declaration.type);
 			}
 			break;
+                        
 		case ASSIGNMENT_NODE:
-			//printf("DECLARATION_ASSIGNMENT_NODE %d\n", kind);
 			exp2 = semantic_check(ast->declaration_assignment.type);
 			exp1 = semantic_check(ast->declaration_assignment.value);
 
@@ -843,12 +807,11 @@ int semantic_check(node *ast) {
 			}
 
 			break;
-		//Eric Needed? 
-		case 26:
-			//printf("ARGUMENTS_COMMA_NODE %d\n", kind);
-			exp1 = semantic_check(ast->arguments_comma.arguments);
-			exp2 = semantic_check(ast->arguments_comma.expression);
-
+                        
+		case ARGUMENTS_NODE:
+			exp1 = semantic_check(ast->arguments.args);
+			exp2 = semantic_check(ast->arguments.expression);
+                        
 			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
 

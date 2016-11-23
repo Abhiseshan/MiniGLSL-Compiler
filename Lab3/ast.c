@@ -175,7 +175,7 @@ void ast_free(node *ast) {
             free(ast->binary.left);
             free(ast->binary.right);
             break;
-        case FUNCTION_NODE
+        case FUNCTION_NODE:
             free(ast->function.args);
             break;
         case CONSTRUCTOR_NODE:
@@ -395,7 +395,7 @@ void ast_print(node * ast, int indentLevel) {
             break;
         case ARRAY_INDEX_NODE:
             printIndent(indentLevel); printf("(INDEX\n");
-            printIndent(indentLevel + 1); printf("type placeholder"); printf("\n");
+            printIndent(indentLevel + 1); printf(getTypeString(ast->array_index.type)); printf("\n");
             printIndent(indentLevel + 1); printf("%s", ast->array_index.id); printf("\n");
             printIndent(indentLevel + 1); printf("%d", ast->array_index.index);
             printf("\n"); printIndent(indentLevel); printf(")\n");

@@ -38,9 +38,6 @@ bool isResult(char* name){
 	return false;
 }
 
-
-
-
 int getBaseForTypeCode(int type_code) {
 	if (type_code < 4)
 		return 0;
@@ -110,10 +107,9 @@ int checkDepth( node *ast) {
 int semantic_check(node *ast) {
         
 	if(ast==NULL) {
-            //fprintf(errorFile,"Semantic function visited a NULL node\n");
-
-            return ERROR;
-        }
+        fprintf(errorFile,"Semantic function visited a NULL node\n");
+        return ERROR;
+    }
 
 	int kind;
 	int type;
@@ -122,60 +118,57 @@ int semantic_check(node *ast) {
 	char * name;
 	int index;
 	kind = ast->kind;
-        int isDecl=0;
-        symbol_table_entry *entry;
-        node *var;
+    int isDecl=0;
+    symbol_table_entry *entry;
+    node *var;
 
 	switch(kind){
 		case ENTER_SCOPE_NODE:
-                    //fprintf(errorFile,"ENTER_SCOPE_NODE\n");
 			return exp1 = semantic_check(ast->enter_scope);			
 			break;
 
 		case SCOPE_NODE:
-                    //fprintf(errorFile,"SCOPE_NODE\n");
-                        scope_enter();
+            scope_enter();
+
 			if (ast->scope.declarations)
-                            exp1 = semantic_check(ast->scope.declarations);
-                        else 
-                            exp1 = 1;
-                        if(ast->scope.statements) 
-                            exp2 = semantic_check(ast->scope.statements);
-                        else
-                            exp2 = 1;
+                exp1 = semantic_check(ast->scope.declarations);
+            else 
+                exp1 = 1;
+            if(ast->scope.statements) 
+                exp2 = semantic_check(ast->scope.statements);
+            else
+                exp2 = 1;
 
 			if(exp1==ERROR || exp2 == ERROR)
-                            return ERROR;
+                return ERROR;
 
-                        scope_exit();
+            scope_exit();
 			return 0;
 			break;
 
 		case DECLARATIONS_NODE:
-                    //fprintf(errorFile,"DECLARATIONS_NODE\n");
-                        if(ast->declarations.declarations)
-                            exp1 = semantic_check(ast->declarations.declarations);
-                        else 
-                            exp1 = 1;
-			
-                        exp2 = semantic_check(ast->declarations.declaration);
+            if(ast->declarations.declarations)
+                exp1 = semantic_check(ast->declarations.declarations);
+            else 
+                exp1 = 1;
+
+            exp2 = semantic_check(ast->declarations.declaration);
 
 			if(exp1==ERROR || exp2 == ERROR)
-                            return ERROR;
+                return ERROR;
 
 			return exp2;
 			break;
 
 		case STATEMENTS_NODE:
-                    //fprintf(errorFile,"STATEMENTS_NODE\n");
 			if (ast->statements.statements)
-                            exp1 = semantic_check(ast->statements.statements);
-                        else
-                            exp1 = 1;
-                        if(ast->statements.statement)
-                            exp2 = semantic_check(ast->statements.statement);
-                        else
-                            exp2 = 1;
+                exp1 = semantic_check(ast->statements.statements);
+            else
+                exp1 = 1;
+            if(ast->statements.statement)
+                exp2 = semantic_check(ast->statements.statement);
+            else
+                exp2 = 1;
                     
 			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
@@ -184,12 +177,10 @@ int semantic_check(node *ast) {
 			break;
                         
 		case NESTED_EXPRESSION_NODE:
-                    //fprintf(errorFile,"NESTED_EXPRESSION_NODE\n");
 			return semantic_check(ast->nested_expression);
 			break;
 
 		case UNARY_EXPRESION_NODE:
-                    //fprintf(errorFile,"UNARY_EXPRESION_NODE\n");
 			exp1 = semantic_check(ast->unary.right);
 
 			if(exp1==ERROR)
@@ -197,9 +188,9 @@ int semantic_check(node *ast) {
 
 			switch (ast->unary.op){
 				case MINUS_OP:
-					if(exp1 == BOOL || exp1==BVEC2|| exp1==BVEC3|| exp1==BVEC4){
-                                            
-						errorOccurred = 1; fprintf(errorFile,"Line: %d: error: found BOOL, expecting INT or FLOAT\n",ast->line_num);						
+					if(exp1 == BOOL || exp1==BVEC2|| exp1==BVEC3|| exp1==BVEC4){                    
+						errorOccurred = 1; 
+						fprintf(errorFile,"Line: %d: error: found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 						return ERROR;
 					} else{
 						return exp1;
@@ -209,13 +200,16 @@ int semantic_check(node *ast) {
 				case NOT_OP:
 					if(exp1!=BOOL || exp1!=BVEC2 || exp1!=BVEC3 || exp1!=BVEC4){
 						if(exp1 == INT || exp1==IVEC2 || exp1==IVEC3|| exp1==IVEC4){
-							errorOccurred = 1; fprintf(errorFile,"Line: %d: error: found INTEGER, expecting BOOL\n",ast->line_num);						
+							errorOccurred = 1; 
+							fprintf(errorFile,"Line: %d: error: found INTEGER, expecting BOOL\n",ast->line_num);						
 						}
 						else if(exp1 == FLOAT || exp1==VEC2 || exp1==VEC3|| exp1==VEC4){
-							errorOccurred = 1; fprintf(errorFile,"Line: %d: error: found FLOAT, expecting BOOL\n",ast->line_num);						
+							errorOccurred = 1; 
+							fprintf(errorFile,"Line: %d: error: found FLOAT, expecting BOOL\n",ast->line_num);						
 						}
 						else {
-							errorOccurred = 1; fprintf(errorFile,"Line: %d: error: found UNKNOWN TYPE, expecting BOOL\n",ast->line_num);						
+							errorOccurred = 1; 
+							fprintf(errorFile,"Line: %d: error: found UNKNOWN TYPE, expecting BOOL\n",ast->line_num);						
 						}
 						return ERROR;
 
@@ -227,7 +221,6 @@ int semantic_check(node *ast) {
 			break;
                         
 		case BINARY_EXPRESSION_NODE:
-                    //fprintf(errorFile,"BINARY_EXPRESSION_NODE\n");
 			exp2 = semantic_check(ast->binary.left);
 			exp1 = semantic_check(ast->binary.right);
 
@@ -245,19 +238,24 @@ int semantic_check(node *ast) {
 				}else if(exp2==BVEC4 && exp1==BVEC4){
 					return BVEC4;
 				}else if(exp2 == INT || exp2 == IVEC2 || exp2 == IVEC3 || exp2 == IVEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found INT, expecting BOOL\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found INT, expecting BOOL\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1 == INT || exp1 == IVEC2 || exp1 == IVEC3 || exp1 == IVEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found INT, expecting BOOL\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found INT, expecting BOOL\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2 == FLOAT || exp2 == VEC2 || exp2 == VEC3 || exp2 == VEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found FLOAT, expecting BOOL\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found FLOAT, expecting BOOL\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1 == FLOAT || exp1 == VEC2 || exp1 == VEC3 || exp1 == VEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found FLOAT, expecting BOOL\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found FLOAT, expecting BOOL\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2 != exp1){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, operation can only be performed on vectors of same size\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, operation can only be performed on vectors of same size\n",ast->line_num);						
 					return ERROR;
 				}
 			}
@@ -269,28 +267,36 @@ int semantic_check(node *ast) {
 				}else if(exp2==FLOAT && exp1==FLOAT){
 					return FLOAT;
 				}else if(exp2==BOOL || exp1==BOOL){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2== IVEC2 || exp2==IVEC3 || exp2==IVEC4){	
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found INT VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found INT VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2== VEC2 || exp2==VEC3 || exp2==VEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found FLOAT VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found FLOAT VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2== BVEC2 || exp2==BVEC3 || exp2==BVEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1== IVEC2 || exp1==IVEC3 || exp1==IVEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found INT VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found INT VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1== VEC2 || exp1==VEC3 || exp1==VEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found FLOAT VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found FLOAT VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1== BVEC2 || exp1==BVEC3 || exp1==BVEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL VECTOR, expecting SCALAR INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2!=exp1){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
 					return ERROR;
 				}
 			}
@@ -298,10 +304,12 @@ int semantic_check(node *ast) {
 			if(ast->binary.op==EQ_OP || ast->binary.op==NEQ_OP){
 				if(exp2==exp1){
 					if(exp2==BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
-						errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
+						errorOccurred = 1; 
+						fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					}
 				}else{
-						errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
+						errorOccurred = 1; 
+						fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
 					return ERROR;
 				}
 			}
@@ -325,13 +333,16 @@ int semantic_check(node *ast) {
 				}else if(exp2==VEC4 && exp1==VEC4){
 					return VEC4;
 				}else if(exp2==BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1==BOOL || exp1 == BVEC2 || exp1 == BVEC3 || exp1 == BVEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2!=exp1){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
 					return ERROR;
 				}
 			}
@@ -347,15 +358,18 @@ int semantic_check(node *ast) {
 				}else if(exp1 == FLOAT && (exp2==FLOAT || exp2==VEC2 || exp2==VEC3 || exp2==VEC4)){
 					return exp2;
 				}else if(exp2 == BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1==BOOL || exp1 == BVEC2 || exp1 == BVEC3 || exp1 == BVEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1;
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2==exp1){
 					return exp2;
 				}else if(exp2!=exp1){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
 					return ERROR;
 				}
 			}
@@ -367,175 +381,152 @@ int semantic_check(node *ast) {
 				}else if(exp2==FLOAT && exp1==FLOAT){
 					return FLOAT;
 				}else if(exp2 == BOOL || exp2 == BVEC2 || exp2 == BVEC3 || exp2 == BVEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp1==BOOL || exp1 == BVEC2 || exp1 == BVEC3 || exp1 == BVEC4){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
 				}else if(exp2!=exp1){
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
 					return ERROR;
 				}else{
-					errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of SCALAR type\n",ast->line_num);						
+					errorOccurred = 1; 
+					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of SCALAR type\n",ast->line_num);						
 					return ERROR;
 				}
 			}
 			break;
                         
 		case INT_NODE:
-                    //fprintf(errorFile,"INT_NODE\n");
 			return INT;
 			break;
 		case FLOAT_NODE:
-                    //fprintf(errorFile,"FLOAT_NODE\n");
 			return FLOAT;
 			break;
 		case BOOL_NODE:
-                    //fprintf(errorFile,"BOOL_NODE\n");
 			return BOOL;
 			break;
                         
 		case VARIABLE_NODE:
-                    //fprintf(errorFile,"VARIABLE_NODE\n");
-			//type = symbol_exists_in_this_scope(ast->variable.id);
-                        entry = symbol_find(ast->variable.id);
-                        
-                        if (!entry) {
-				errorOccurred = 1; fprintf(errorFile,"Line: %d: error: UNDEFINED VARIABLE, %s not defined in scope before it is used.\n",ast->line_num, ast->variable.id);						
-                                return ERROR;
-                        } else if (!entry->is_init){
-                                errorOccurred = 1; fprintf(errorFile,"Line: %d: error: UNINITIALISED VARIABLE, %s not initialised in scope before it is used.\n",ast->line_num, ast->variable.id);
-                                return ERROR;
-                        } else {
-                            return entry->type_code;
-                        }
+            entry = symbol_find(ast->variable.id);
+            
+            if (!entry) {
+				errorOccurred = 1; 
+				fprintf(errorFile,"Line: %d: error: UNDEFINED VARIABLE, %s not defined in scope before it is used.\n",ast->line_num, ast->variable.id);						
+                return ERROR;
+            } else if (!entry->is_init){
+                errorOccurred = 1; 
+                fprintf(errorFile,"Line: %d: error: UNINITIALISED VARIABLE, %s not initialised in scope before it is used.\n",ast->line_num, ast->variable.id);
+                return ERROR;
+            } else {
+                return entry->type_code;
+            }
 			break;
 
 		case ARRAY_INDEX_NODE:
-                    //fprintf(errorFile,"ARRAY_INDEX_NODE\n");
-                        entry = symbol_find(ast->array_index.id);
-                         if (!entry) {
-				errorOccurred = 1; fprintf(errorFile,"Line: %d: error: UNDEFINED VARIABLE, %s not defined in scope before it is used.\n",ast->line_num, ast->variable.id);						
-                                return ERROR;
-                        } else if (!entry->is_init){
-                                errorOccurred = 1; fprintf(errorFile,"Line: %d: error: UNINITIALISED VARIABLE, %s not initialised in scope before it is used.\n",ast->line_num, ast->variable.id);
-                                return ERROR;
-                        }
-                        
-                        type = entry->type_code;
-                        ast->array_index.type = (type_code) type;
+            entry = symbol_find(ast->array_index.id);
+            if (!entry) {
+				errorOccurred = 1; 
+				fprintf(errorFile,"Line: %d: error: UNDEFINED VARIABLE, %s not defined in scope before it is used.\n",ast->line_num, ast->variable.id);						
+                return ERROR;
+
+            } else if (!entry->is_init){
+                errorOccurred = 1; fprintf(errorFile,"Line: %d: error: UNINITIALISED VARIABLE, %s not initialised in scope before it is used.\n",ast->line_num, ast->variable.id);
+                return ERROR;
+            }
+            
+            type = entry->type_code;
+            ast->array_index.type = (type_code) type;
 
 			index = ast->array_index.index;
 			switch(type){
-                            case IVEC2:
-                                    if(index>=2 || index < 0){
-                                            errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Index out of bounds\n",ast->line_num);
-                                            return ERROR;
-                                    }
-                                    break;
-                            case IVEC3:
-                                    if(index>=3 || index < 0){
-                                            errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Index out of bounds\n",ast->line_num);
-                                            return ERROR;
-                                    }
-                                    break;
-                            case IVEC4:
-                                    if(index>=4 || index < 0){
-                                            errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Index out of bounds\n",ast->line_num);
-                                            return ERROR;
-                                    }
-                                    break;
-                            case BVEC2:
-                                    if(index>=2 || index < 0){
-                                            errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Index out of bounds\n",ast->line_num);
-                                            return ERROR;
-                                    }
-                                    break;
-                            case BVEC3:
-                                    if(index>=3 || index < 0){
-                                            errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Index out of bounds\n",ast->line_num);
-                                            return ERROR;
-                                    }
-                                    break;
-                            case BVEC4:
-                                    if(index>=4 || index < 0){
-                                            errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Index out of bounds\n",ast->line_num);
-                                            return ERROR;
-                                    }
-                                    break;
-                            case VEC2:
-                                    if(index>=2 || index < 0){
-                                            errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Index out of bounds\n",ast->line_num);
-                                            return ERROR;
-                                    }
-                                    break;
-                            case VEC3:
-                                    if(index>=3 || index < 0){
-                                            errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Index out of bounds\n",ast->line_num);
-                                            return ERROR;
-                                    }
-                                    break;
-                            case VEC4:
-                                    if(index>=4 || index < 0){
-                                            errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Index out of bounds\n",ast->line_num);
-                                            return ERROR;
-                                    }
-                                    break;
-                            default:
-                                            errorOccurred = 1; fprintf(errorFile,"Line: %d: error: Cannot read index of scalar data types\n",ast->line_num);
-                                    return ERROR;
+                case BVEC2:
+                case VEC2:
+                case IVEC2:
+                    if(index>=2 || index < 0){
+                        errorOccurred = 1; 
+                        fprintf(errorFile,"Line: %d: error: Index out of bounds\n",ast->line_num);
+                        return ERROR;
+                    }
+                    break;
+                case BVEC3:
+                case VEC3:
+                case IVEC3:
+                    if(index>=3 || index < 0){
+                        errorOccurred = 1; 
+                        fprintf(errorFile,"Line: %d: error: Index out of bounds\n",ast->line_num);
+                        return ERROR;
+                    }
+                    break;
+                case BVEC4:
+                case VEC4:
+                case IVEC4:
+                    if(index>=4 || index < 0){
+	                    errorOccurred = 1; 
+	                    fprintf(errorFile,"Line: %d: error: Index out of bounds\n",ast->line_num);
+	                    return ERROR;
+                    }
+                    break;
+                default:
+                    errorOccurred = 1; 
+                    fprintf(errorFile,"Line: %d: error: Cannot read index of scalar data types\n",ast->line_num);
+                    return ERROR;
 			}
 
 			break;
 
 		case FUNCTION_NODE:
-                    //fprintf(errorFile,"FUNCTION_NODE\n");
-			type = semantic_check(ast->function.args); //Need to figre out if it is printing if the argeuments passed into the function is right.
+			type = semantic_check(ast->function.args);
 			if(type==ERROR)
 				return ERROR;
 
-			if(ast->function.func_code == 2){ //rsq
-                            if(type==FLOAT){
-                                    return FLOAT;
-                            }
-                            if(type==INT){
-                                    return FLOAT;
-                            }
-                            else {
-                                errorOccurred = 1; fprintf(errorFile,"Line: %d error: expecting int or float to function rsq, got %s", ast->line_num, getTypeString(type));
-                                return ERROR;
-                            }
-			}else if(ast->function.func_code == 0){ //dp3
+			if(ast->function.func_code == 2){ //RSQ
+                if(type==FLOAT){
+                        return FLOAT;
+                }
+                if(type==INT){
+                        return FLOAT;
+                }
+                else {
+                    errorOccurred = 1; 
+                    fprintf(errorFile,"Line: %d error: expecting int or float to function rsq, got %s", ast->line_num, getTypeString(type));
+                    return ERROR;
+                }
+			} else if(ast->function.func_code == 0) { //DP3
 				if(type==VEC4 || type == VEC3){
 					return FLOAT;
 				}
 				if(type==IVEC4 || type == IVEC3){
 					return INT;
-				}
-                                else {
-                                    errorOccurred = 1; fprintf(errorFile,"Line: %d error: expecting vec4, vec3, ivec4, or ivec3 to function dp3, got %s",ast->line_num, getTypeString(type));
-                                    return ERROR;
-                                }
-			}else if (ast->function.func_code == 1){ //lit
-                            if(type != VEC4)  {
-                                errorOccurred = 1; fprintf(errorFile,"Line: %d error: expecting vec4 to function lit, got %s",ast->line_num, getTypeString(type));
-                                return ERROR;
-                            }
-                            return FLOAT;
+				} else {
+	                errorOccurred = 1; 
+	                fprintf(errorFile,"Line: %d error: expecting vec4, vec3, ivec4, or ivec3 to function dp3, got %s",ast->line_num, getTypeString(type));
+	                return ERROR;
+	            }
+			} else if (ast->function.func_code == 1 ){  //LIT
+                if(type != VEC4)  {
+                    errorOccurred = 1; 
+                    fprintf(errorFile,"Line: %d error: expecting vec4 to function lit, got %s",ast->line_num, getTypeString(type));
+                    return ERROR;
+                }
+                return FLOAT;
 			}
 
-			errorOccurred = 1; fprintf(errorFile,"Line: %d: error: UNRECOGNIZED function %s\n",ast->line_num, getFuncString(ast->function.func_code));
+			errorOccurred = 1; 
+			fprintf(errorFile,"Line: %d: error: UNRECOGNIZED function %s\n",ast->line_num, getFuncString(ast->function.func_code));
 			return ERROR;
 
 			break;
 
 		case CONSTRUCTOR_NODE:
-                    //fprintf(errorFile,"CONSTRUCTOR_NODE\n");
 			exp2 = semantic_check(ast->constructor.type);
 			if (ast->constructor.args)
-                            exp1 = semantic_check(ast->constructor.args);
-                        else
-                            exp1 = 1;
+                exp1 = semantic_check(ast->constructor.args);
+            else
+                exp1 = 1;
 
 			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;
@@ -543,39 +534,45 @@ int semantic_check(node *ast) {
 			depth = checkDepth(ast->constructor.args);
 
 			switch(exp2){
-                                case FLOAT:
-                                case BOOL:
-                                case INT:
-                                        if(depth>1){
-						errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TOO MANY ARGUMENTS, expecting 1, got %d\n",ast->line_num, depth);
+                case FLOAT:
+                case BOOL:
+                case INT:
+                    if(depth>1){
+						errorOccurred = 1; 
+						fprintf(errorFile,"Line: %d: error: TOO MANY ARGUMENTS, expecting 1, got %d\n",ast->line_num, depth);
 						return ERROR;
 					}
 					else if (depth<1){
-						errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TOO FEW ARGUMENTS, expecting 1, got %d\n",ast->line_num, depth);
+						errorOccurred = 1; 
+						fprintf(errorFile,"Line: %d: error: TOO FEW ARGUMENTS, expecting 1, got %d\n",ast->line_num, depth);
 						return ERROR;
 					}
 					break;
-                                case BVEC2:
-                                case VEC2:
+                case BVEC2:
+                case VEC2:
 				case IVEC2:
 					if(depth>2){
-						errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TOO MANY ARGUMENTS, expecting 2, got %d\n",ast->line_num, depth);
+						errorOccurred = 1; 
+						fprintf(errorFile,"Line: %d: error: TOO MANY ARGUMENTS, expecting 2, got %d\n",ast->line_num, depth);
 						return ERROR;
 					}
 					else if (depth<2){
-						errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TOO FEW ARGUMENTS, expecting 2, got %d\n",ast->line_num, depth);
+						errorOccurred = 1; 
+						fprintf(errorFile,"Line: %d: error: TOO FEW ARGUMENTS, expecting 2, got %d\n",ast->line_num, depth);
 						return ERROR;
 					}
 					break;
-                                case BVEC3:
-                                case VEC3:
+                case BVEC3:
+                case VEC3:
 				case IVEC3:
 					if(depth>3){
-						errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TOO MANY ARGUMENTS, expecting 3, got %d\n",ast->line_num, depth);
+						errorOccurred = 1; 
+						fprintf(errorFile,"Line: %d: error: TOO MANY ARGUMENTS, expecting 3, got %d\n",ast->line_num, depth);
 						return ERROR;
 					}
 					else if (depth<3){
-						errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TOO FEW ARGUMENTS, expecting 3, got %d\n",ast->line_num, depth);
+						errorOccurred = 1; 
+						fprintf(errorFile,"Line: %d: error: TOO FEW ARGUMENTS, expecting 3, got %d\n",ast->line_num, depth);
 						return ERROR;
 					}
 					break;
@@ -583,17 +580,20 @@ int semantic_check(node *ast) {
                                 case BVEC4:
 				case IVEC4:
 					if(depth>4){
-						errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TOO MANY ARGUMENTS, expecting 4, got %d\n",ast->line_num, depth);
+						errorOccurred = 1; 
+						fprintf(errorFile,"Line: %d: error: TOO MANY ARGUMENTS, expecting 4, got %d\n",ast->line_num, depth);
 						return ERROR;
 					}
 					else if (depth<4){
-						errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TOO FEW ARGUMENTS, expecting 4, got %d\n",ast->line_num, depth);
+						errorOccurred = 1; 
+						fprintf(errorFile,"Line: %d: error: TOO FEW ARGUMENTS, expecting 4, got %d\n",ast->line_num, depth);
 						return ERROR;
 					}
 					break;
 				default:
 					if(depth>1){
-						errorOccurred = 1; fprintf(errorFile,"Line: %d: error: UNKNOWN CONSTRUCTOR\n",ast->line_num);
+						errorOccurred = 1; 
+						fprintf(errorFile,"Line: %d: error: UNKNOWN CONSTRUCTOR\n",ast->line_num);
 					}
 			}
 
@@ -601,34 +601,26 @@ int semantic_check(node *ast) {
 				if(exp1==INT){
 					return exp2;
 				}
-			}
-
-			else if(exp2 == BOOL || exp2==BVEC2 || exp2==BVEC3 || exp2==BVEC4){
+			} else if(exp2 == BOOL || exp2==BVEC2 || exp2==BVEC3 || exp2==BVEC4){
 				if(exp1==BOOL){
 					return exp2;
 				}
-			}
-
-			else if(exp2 == FLOAT || exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
+			} else if(exp2 == FLOAT || exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
 				if(exp1==FLOAT){
 					return exp2;
 				}
-			}
-
-			else {
-				errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH\n",ast->line_num);
+			} else {
+				errorOccurred = 1; 
+				fprintf(errorFile,"Line: %d: error: TYPE MISMATCH\n",ast->line_num);
 				return ERROR;
-                        }
+            }
 			break;
                             
 		case TYPE_NODE:
-                    //fprintf(errorFile,"TYPE_NODE\n");
 			return ast->type_node.type;
 			break;
                         
 		case IF_STATEMENT_NODE:
-                    //fprintf(errorFile,"IF_STATEMENT_NODE\n");
-
 			isInIf++;
 			exp2 = semantic_check(ast->if_statement.cond);
 
@@ -649,31 +641,32 @@ int semantic_check(node *ast) {
 			break;
                         
 		case ASSIGNMENT_NODE:
-                    //fprintf(errorFile,"ASSIGNMENT_NODE\n");
-
 			var = ast->assignment.var;
-                        if(var->kind == VARIABLE_NODE)
-                            name = var->variable.id;
-                        else
-                            name = var->array_index.id;
+            if(var->kind == VARIABLE_NODE)
+                name = var->variable.id;
+            else
+                name = var->array_index.id;
 
-                        entry = symbol_find(name);
-                        if(isAttribute(name) || isUniform(name)){
-				errorOccurred = 1; fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, trying to write to a read-only variable\n",ast->line_num);
+            entry = symbol_find(name);
+            if(isAttribute(name) || isUniform(name)){
+				errorOccurred = 1; 
+				fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, trying to write to a read-only variable\n",ast->line_num);
 				return ERROR;
 			}
                         
-                        if(isResult(name) && isInIf!=0){
-                            errorOccurred = 1; fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, trying to write to a Uniform Pre-Defined variable inside an if/else statement\n",ast->line_num);
+            if(isResult(name) && isInIf!=0){
+                errorOccurred = 1; 
+                fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, trying to write to a Uniform Pre-Defined variable inside an if/else statement\n",ast->line_num);
 				return ERROR;
-                        }
-                        
-                        if(entry == NULL) {
-                            errorOccurred = 1; fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, variable %s not defined\n", ast->line_num, name);
-                            return ERROR;
-                        }
-                        exp2 = entry->vec;
-                        ast->assignment.type = (type_code) entry->type_code;
+            }
+            
+            if(entry == NULL) {
+                errorOccurred = 1; 
+                fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, variable %s not defined\n", ast->line_num, name);
+                return ERROR;
+            }
+            exp2 = entry->vec;
+            ast->assignment.type = (type_code) entry->type_code;
                           
 			exp1 = semantic_check(ast->assignment.expression);
 
@@ -683,13 +676,15 @@ int semantic_check(node *ast) {
 			var = ast->assignment.expression;
 
                         
-                        if (entry->is_const) {
-				errorOccurred = 1; fprintf(errorFile,"Line: %d: error: cannot assign a value to a constant variable.\n",ast->line_num);
+            if (entry->is_const) {
+				errorOccurred = 1; 
+				fprintf(errorFile,"Line: %d: error: cannot assign a value to a constant variable.\n",ast->line_num);
 				return ERROR;
 			}
                         
-                        if(exp2!=exp1){
-				errorOccurred = 1; fprintf(errorFile,"Line: %d: error: TYPE MISMATCH\n",ast->line_num);
+            if(exp2!=exp1){
+				errorOccurred = 1; 
+				fprintf(errorFile,"Line: %d: error: TYPE MISMATCH\n",ast->line_num);
 				return ERROR;
 			}
                         
@@ -697,38 +692,37 @@ int semantic_check(node *ast) {
 				name = var->variable.id;
 			else if (var->kind == ARRAY_INDEX_NODE)
 				name = var->array_index.id;	
-                        else
-                                return exp2;
-
+            else
+                return exp2;
 			
 			if(isResult(name)){
-				errorOccurred = 1; fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, trying to read from a write-only variable\n",ast->line_num);
+				errorOccurred = 1; 
+				fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, trying to read from a write-only variable\n",ast->line_num);
 				return ERROR;
 			}
                         
-                        entry = symbol_find(name);
-                        entry->is_init = 1;
+	        entry = symbol_find(name);
+	        entry->is_init = 1;
 
 			return exp2;
 			break;
                         
 		case NESTED_SCOPE_NODE:
-                    //fprintf(errorFile,"NESTED_SCOPE_NODE\n");
-                        return semantic_check(ast->nested_scope);
+            return semantic_check(ast->nested_scope);
 			break;
                         
 		case DECLARATION_NODE:
-                    //fprintf(errorFile,"DECLARATION_NODE\n");
 			isDecl = symbol_exists_in_this_scope(ast->declaration.id);
 
 			if (checkPredefined(ast->declaration.id) == ERROR) {
-				errorOccurred = 1; fprintf(errorFile,"line: %d: error: Cannot declare Pre-defined variables\n", ast->line_num);
+				errorOccurred = 1; 
+				fprintf(errorFile,"line: %d: error: Cannot declare Pre-defined variables\n", ast->line_num);
 				return ERROR;
 			}
 
 			if(isDecl!= -1){
 				errorOccurred = 1; 
-                                fprintf(errorFile,"Line: %d: error: Variable already declared.\n",ast->line_num);
+               	fprintf(errorFile,"Line: %d: error: Variable already declared.\n",ast->line_num);
 				return ERROR;
 			}else{
 				symbol_table_entry new_entry;
@@ -757,7 +751,6 @@ int semantic_check(node *ast) {
 			break;
                         
 		case ARGUMENTS_NODE:
-                    //fprintf(errorFile,"ARGUMENTS_NODE\n");
 			if (ast->arguments.args && ast->arguments.expression) {
                             exp1 = semantic_check(ast->arguments.args);
                             exp2 = semantic_check(ast->arguments.expression);
@@ -773,24 +766,24 @@ int semantic_check(node *ast) {
 				return exp1;
 			}else{
 				errorOccurred = 1; 
-                                fprintf(errorFile,"Line: %d: error: Type mismatch. All arguments are not of the same type.\n",ast->line_num); 
+                fprintf(errorFile,"Line: %d: error: Type mismatch. All arguments are not of the same type.\n",ast->line_num); 
 				return ERROR;
 			}
 			break;
                         
 		case EXPRESSION_VARIABLE_NODE:
-                    //fprintf(errorFile,"EXPRESSION_VARIABLE_NODE\n");
 			return semantic_check(ast->expression_variable);
 			break;
                         
 		case UNKNOWN:
-                    errorOccurred = 1; fprintf(errorFile,"UNKNOWN\n");
-			errorOccurred = 1; fprintf(errorFile,"Line: %d: error: UNKNOWN ERROR. You have successfully voted for Donald Trump!\n",ast->line_num);
+			errorOccurred = 1; 
+			fprintf(errorFile,"Line: %d: error: UNKNOWN ERROR. You have successfully voted for Donald Trump!\n",ast->line_num);
 			return ERROR;
 			break;
                         
 		default:
-			errorOccurred = 1; fprintf(errorFile,"Line: %d: error: SEGMENTATION FAULT. You have successfully crashed the compiler!\n",ast->line_num);
+			errorOccurred = 1; 
+			fprintf(errorFile,"Line: %d: error: SEGMENTATION FAULT. You have successfully crashed the compiler!\n",ast->line_num);
 			return ERROR;
 			break;
 

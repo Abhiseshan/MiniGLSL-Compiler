@@ -14,9 +14,7 @@ typedef struct _symbol_table_entry {
 
 void scope_enter();
 void scope_exit();
-int scope_is_in_main();
 int symbol_exists_in_this_scope(char *id);
-bool is_symobl_const(char *id);
 void symbol_add(symbol_table_entry entry);
 symbol_table_entry* symbol_find(char *id);
 

@@ -5,7 +5,7 @@
 #include "symbol.h"
 
 symbol_table_entry* stack = NULL;
-#define ERROR -1
+
 /**
  * Add a parent to the stack
  */
@@ -59,13 +59,6 @@ void symbol_add(symbol_table_entry entry) {
 }
 
 /**
- * Check if we are in the base scope
- */
-int scope_is_in_main(){
-	return stack ? stack->next == NULL : 0;
-}
-
-/**
  * Check if symbol exists in the scope
  */
 int symbol_exists_in_this_scope(char *id) {
@@ -78,20 +71,7 @@ int symbol_exists_in_this_scope(char *id) {
 		}
 		cur = cur->sib;
 	}
-	return ERROR;
-}
-
-bool is_symobl_const(char *id) {
-	symbol_table_entry *cur = stack;
-	while(cur) {
-		if (cur->id) {
-			if(strcmp(cur->id, id) == 0) {
-				return cur->is_const;
-			}
-		}
-		cur = cur->sib;
-	}
-	return false;
+	return -1;
 }
 
 /**

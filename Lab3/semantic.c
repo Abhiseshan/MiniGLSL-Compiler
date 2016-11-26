@@ -607,6 +607,7 @@ int semantic_check(node *ast) {
 				}
 			} else if(exp2 == FLOAT || exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
 				if(exp1==FLOAT){
+					//fprintf(errorFile,"CONS EXP1: %d: \nEXP2: %d:\n",exp1, exp2);								
 					return exp2;
 				}
 			} else {
@@ -665,7 +666,7 @@ int semantic_check(node *ast) {
                 fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, variable %s not defined\n", ast->line_num, name);
                 return ERROR;
             }
-            exp2 = entry->vec;
+            exp2 = entry->type_code;
             ast->assignment.type = (type_code) entry->type_code;
                           
 			exp1 = semantic_check(ast->assignment.expression);

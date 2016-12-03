@@ -21,7 +21,7 @@ enum {
 
 int inPreEval(int kind) {
 	if (kind == UNARY_EXPRESION_NODE || kind == BINARY_EXPRESSION_NODE
-			|| kind == FUNCTION_NODE) {
+			|| kind == FUNCTION_NODE || kind == CONSTRUCTOR_NODE) {
 		return 1;
 	}
 	return 0;

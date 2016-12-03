@@ -753,12 +753,12 @@ int semantic_check(node *ast) {
                         
 		case ARGUMENTS_NODE:
 			if (ast->arguments.args && ast->arguments.expression) {
-                            exp1 = semantic_check(ast->arguments.args);
-                            exp2 = semantic_check(ast->arguments.expression);
-                        } else if (ast->arguments.args)
-                            exp2 = exp1 = semantic_check(ast->arguments.args);
-                        else 
-                            exp1 = exp2 = semantic_check(ast->arguments.expression);
+                exp1 = semantic_check(ast->arguments.args);
+                exp2 = semantic_check(ast->arguments.expression);
+            } else if (ast->arguments.args)
+                exp2 = exp1 = semantic_check(ast->arguments.args);
+            else 
+                exp1 = exp2 = semantic_check(ast->arguments.expression);
                         
 			if(exp1==ERROR || exp2 == ERROR)
 				return ERROR;

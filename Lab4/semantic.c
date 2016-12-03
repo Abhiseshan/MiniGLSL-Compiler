@@ -735,19 +735,19 @@ int semantic_check(node *ast) {
 		  		symbol_add(new_entry);
 			}
                         
-                        exp2 = semantic_check(ast->declaration.type);
-                        if(ast->declaration.expression != NULL) {
-                            exp1 = semantic_check(ast->declaration.expression);
-                            if(exp1 == exp2)
-                                return exp1;
-                            else {
-                                errorOccurred = 1; 
-                                fprintf(errorFile,"Line: %d: error: Type mismatch.\n",ast->line_num); 
-                                return ERROR;
-                            }
-                        }
-                        else
-                            return exp2;
+            exp2 = semantic_check(ast->declaration.type);
+            if(ast->declaration.expression != NULL) {
+                exp1 = semantic_check(ast->declaration.expression);
+                if(exp1 == exp2)
+                    return exp1;
+                else {
+                    errorOccurred = 1; 
+                    fprintf(errorFile,"Line: %d: error: Type mismatch.\n",ast->line_num); 
+                    return ERROR;
+                }
+            }
+            else
+                return exp2;
                         
 			break;
                         

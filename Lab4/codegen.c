@@ -942,8 +942,7 @@ int genCode(node *ast) {
 		exp2 = genCode(ast->const_declaration_assignment.type);
 		if (isTempRes(ast->declaration_assignment.value->kind)) {
 			exp1 = genCode(ast->declaration_assignment.value);
-			print(
-					"PARAM %s = tmpVar%d;\n", ast->declaration_assignment.iden, exp1);
+			print("PARAM %s = tmpVar%d;\n", ast->declaration_assignment.iden, exp1);
 
 		} else {
 			print("PARAM %s = ", ast->declaration_assignment.iden);

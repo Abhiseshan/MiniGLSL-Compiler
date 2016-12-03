@@ -2,7 +2,6 @@
 
 #define print(...) fprintf(fragFile,__VA_ARGS__)
 
-static int scopeCount;
 int tmpCount = 1;
 int prmCount = 1;
 int condCount = 1;
@@ -21,7 +20,7 @@ enum {
 
 int isTempRes(int kind) {
 	if (kind == UNARY_EXPRESION_NODE || kind == BINARY_EXPRESSION_NODE
-			|| kind == FUNCTION_NODE || kind == CONSTRUCTOR_NODE) {
+			|| kind == FUNCTION_NODE) {
 		return 1;
 	}
 	return 0;
@@ -211,13 +210,11 @@ int genCode(node *ast) {
 
 	switch (kind) {
 	case ENTER_SCOPE_NODE:
-		scopeCount++;
 		//printf("ENTER_SCOPE_NODE %d\n", kind);
 
 		exp1 = genCode(ast->enter_scope);
-		scopeCount--;
 		return exp1;
-		break;
+
 	case SCOPE_NODE:
 		//printf("SCOPE_NODE %d\n", kind);
 		if (ast->scope.declarations)
@@ -233,7 +230,6 @@ int genCode(node *ast) {
             return -1;
 
 		return 0;
-		break;
 
 	case DECLARATIONS_NODE:
 		//printf("DECLARATIONS_NODE %d\n", kind);
@@ -248,7 +244,6 @@ int genCode(node *ast) {
             return -1;
 
 		return exp2;
-		break;
 
 	case STATEMENTS_NODE:
 		//printf("STATEMENTS_NODE %d\n", kind);
@@ -265,17 +260,10 @@ int genCode(node *ast) {
 			return -1;
 
 		return exp2;
-		break;
-
-	case 5:
-		//printf("EXPRESSION_NODE No node %d\n", kind);
-		// No EXPRESSION_NODE
-		break;
 
 	case NESTED_EXPRESSION_NODE:
 		//printf("PREN_EXPRESSION_NODE %d\n", kind);
 		return genCode(ast->nested_expression);
-		break;
 
 	case UNARY_EXPRESION_NODE:
 		//printf("UNARY_EXPRESION_NODE %d\n", kind);
@@ -289,11 +277,9 @@ int genCode(node *ast) {
 				case MINUS:
 					print("SUB tmpVar%d, 0.0, tmpVar%d;\n", val, exp1);
 					return val;
-					break;
 				case NOT:
 					print("NOT tmpVar%d, tmpVar%d;\n", val, exp1);
 					return val;
-					break;
 			}
 		} else {
 			switch (ast->unary.op) {
@@ -302,17 +288,14 @@ int genCode(node *ast) {
 					exp1 = genCode(ast->unary.right);
 					print(" , -1.0;\n");
 					return val;
-					break;
 				case NOT:
 					print("NOT tmpVar%d, ");
 					exp1 = genCode(ast->unary.right);
 					print(";\n", val);
 					return val;
-					break;
 				}
 		}
 
-		break;
 	case BINARY_EXPRESSION_NODE:
 		//printf("BINARY_EXPRESSION_NODE %d\n", kind);
 		//printf("Operator: %d\n", ast->binary_expr.op);
@@ -673,7 +656,7 @@ int genCode(node *ast) {
 		//}
 
 		return val;
-		break;
+
 	case INT_NODE:
 		//printf("INT_NODE %d\n", kind);
 		//printf("Integer: %d\n",ast->int_literal.right);
@@ -681,7 +664,7 @@ int genCode(node *ast) {
 		//val = tmpCount++;
 		print("%d.0", ast->int_val);
 		return 0;
-		break;
+
 	case FLOAT_NODE:
 		//printf("FLOAT_NODE %d\n", kind);
 		//printf("Float: %f", ast->float_literal.right);
@@ -690,7 +673,7 @@ int genCode(node *ast) {
 
 		print("%f", ast->float_val);
 		return 0;
-		break;
+
 	case BOOL_NODE:
 		//printf("BOOL_NODE %d\n", kind);
 		//printf("Bool: %d", ast->bool_literal.right);
@@ -704,17 +687,14 @@ int genCode(node *ast) {
 		//val = tmpCount++;
 		//return val;
 		return 0;
-		break;
 
 	case VARIABLE_NODE:
 		//print("VAR_NODE %d\n", kind);
 		return printVar(ast);
-		break;
 
 	case ARRAY_INDEX_NODE:
 		//print("ARRAY_NODE %d\n",kind);
 		return printArray(ast);
-		break;
 
 	case FUNCTION_NODE:
 		//printf("FUNCTION_NODE %d\n", kind);
@@ -740,7 +720,6 @@ int genCode(node *ast) {
 		genCode(ast->function.args);
 		print(";\n");
 		return val;
-		break;
 
 	case CONSTRUCTOR_NODE:
 		//printf("CONSTRUCTOR_NODE %d\n", kind);
@@ -749,12 +728,10 @@ int genCode(node *ast) {
 		exp1 = genCode(ast->constructor.args);
 		print("}");
 		return 0;
-		break;
 
 	case TYPE_NODE:
 		//printf("TYPE_NODE %d\n", kind);
 		return 0; //ast->type.type_name;
-		break;
 
 	case IF_STATEMENT_NODE:
 		//printf("#IF_ELSE_STATEMENT_NODE %d\n", kind);
@@ -792,7 +769,6 @@ int genCode(node *ast) {
 		condCount--;
 
 		return 0;
-		break;
 
 	case ASSIGNMENT_NODE:
 		//print("#ASSIGNMENT_NODE %d\n", kind);
@@ -862,95 +838,84 @@ int genCode(node *ast) {
 
 		return 0;
 
-		break;
 	case NESTED_SCOPE_NODE:
-		//printf("NESTED_SCOPE_NODE No node for %d\n", kind);
-		// No NESTED_SCOPE_NODE
-		break;
+		return genCode(ast->nested_scope);
 
-	//DECLARATION_NODE? 
-	case 23:
+	case DECLARATION_NODE:
 		//printf("DECLARATION_NODE %d\n", kind);
-		//print("#Declaration \n");
-		print("TEMP %s;\n", ast->declaration.iden);
-
-		return 0;
-		break;
-	case 24:
-		//printf("DECLARATION_ASSIGNMENT_NODE %d\n", kind);
-		exp2 = genCode(ast->declaration_assignment.type);
-		if_state = s_peak(ifStack,&ifStackTop);
-
-		if (if_state == IN_THEN) {
+		if(!ast->declaration.expression) {	// Declaration without assignment
+			print("TEMP %s;\n", ast->declaration.id);
+		}
+		else if(ast->declaration.is_const) {	// Constant value declaration
+			exp2 = genCode(ast->const_declaration_assignment.type);
 			if (isTempRes(ast->declaration_assignment.value->kind)) {
 				exp1 = genCode(ast->declaration_assignment.value);
-				print("TEMP %s;\n", ast->declaration_assignment.iden);
-				print("CMP ");
-				print("%s ,", ast->declaration_assignment.iden);
-				print("condVar%d ,", condCount);
-				print("%s ,", ast->declaration_assignment.iden);
-				print("tmpVar%d ;\n", exp1);
+				print("PARAM %s = tmpVar%d;\n", ast->declaration_assignment.iden, exp1);
 
 			} else {
-				print("TEMP %s;\n", ast->declaration_assignment.iden);
-				print("CMP ");
-				print("%s ,", ast->declaration_assignment.iden);
-				print("condVar%d ,", condCount);
-				print(" %s ,", ast->declaration_assignment.iden);
+				print("PARAM %s = ", ast->declaration_assignment.iden);
 				exp1 = genCode(ast->declaration_assignment.value);
 				print(";\n");
 			}
-		} else if (if_state == IN_ELSE) {
-			if (isTempRes(ast->declaration_assignment.value->kind)) {
-				exp1 = genCode(ast->declaration_assignment.value);
-				print("TEMP %s;\n", ast->declaration_assignment.iden);
-				print("CMP ");
-				print("%s ,", ast->declaration_assignment.iden);
-				print("condVar%d ,", condCount);
-				print("tmpVar%d ,", exp1);
-				print("%s;\n", ast->declaration_assignment.iden);
+		}	
+		else {
+			exp2 = genCode(ast->declaration_assignment.type);
+			if_state = s_peak(ifStack,&ifStackTop);
 
+			if (if_state == IN_THEN) {
+				if (isTempRes(ast->declaration_assignment.value->kind)) {
+					exp1 = genCode(ast->declaration_assignment.value);
+					print("TEMP %s;\n", ast->declaration_assignment.iden);
+					print("CMP ");
+					print("%s ,", ast->declaration_assignment.iden);
+					print("condVar%d ,", condCount);
+					print("%s ,", ast->declaration_assignment.iden);
+					print("tmpVar%d ;\n", exp1);
+
+				} else {
+					print("TEMP %s;\n", ast->declaration_assignment.iden);
+					print("CMP ");
+					print("%s ,", ast->declaration_assignment.iden);
+					print("condVar%d ,", condCount);
+					print(" %s ,", ast->declaration_assignment.iden);
+					exp1 = genCode(ast->declaration_assignment.value);
+					print(";\n");
+				}
+			} else if (if_state == IN_ELSE) {
+				if (isTempRes(ast->declaration_assignment.value->kind)) {
+					exp1 = genCode(ast->declaration_assignment.value);
+					print("TEMP %s;\n", ast->declaration_assignment.iden);
+					print("CMP ");
+					print("%s ,", ast->declaration_assignment.iden);
+					print("condVar%d ,", condCount);
+					print("tmpVar%d ,", exp1);
+					print("%s;\n", ast->declaration_assignment.iden);
+
+				} else {
+					print("TEMP %s;\n", ast->declaration_assignment.iden);
+					print("CMP ");
+					print("%s ,", ast->declaration_assignment.iden);
+					print("condVar%d ,", condCount);
+					exp1 = genCode(ast->declaration_assignment.value);
+					print(", %s", ast->declaration_assignment.iden);
+					print(";\n");
+				}
 			} else {
-				print("TEMP %s;\n", ast->declaration_assignment.iden);
-				print("CMP ");
-				print("%s ,", ast->declaration_assignment.iden);
-				print("condVar%d ,", condCount);
-				exp1 = genCode(ast->declaration_assignment.value);
-				print(", %s", ast->declaration_assignment.iden);
-				print(";\n");
-			}
 
-		} else {
-
-			if (isTempRes(ast->declaration_assignment.value->kind)) {
-				exp1 = genCode(ast->declaration_assignment.value);
-				print("TEMP %s;\n", ast->declaration_assignment.iden);
-				print("MOV %s, tmpVar%d;\n", ast->declaration_assignment.iden, exp1);
-			} else {
-				print("TEMP %s;\n", ast->declaration_assignment.iden);
-				print("MOV %s, ", ast->declaration_assignment.iden);
-				exp1 = genCode(ast->declaration_assignment.value);
-				print(";\n");
+				if (isTempRes(ast->declaration_assignment.value->kind)) {
+					exp1 = genCode(ast->declaration_assignment.value);
+					print("TEMP %s;\n", ast->declaration_assignment.iden);
+					print("MOV %s, tmpVar%d;\n", ast->declaration_assignment.iden, exp1);
+				} else {
+					print("TEMP %s;\n", ast->declaration_assignment.iden);
+					print("MOV %s, ", ast->declaration_assignment.iden);
+					exp1 = genCode(ast->declaration_assignment.value);
+					print(";\n");
+				}
 			}
 		}
+		return 0;	
 
-		return 0;
-		break;
-	case 25:
-		//printf("CONST_DECLARATION_ASSIGNMENT_NODE %d\n", kind);
-
-		exp2 = genCode(ast->const_declaration_assignment.type);
-		if (isTempRes(ast->declaration_assignment.value->kind)) {
-			exp1 = genCode(ast->declaration_assignment.value);
-			print("PARAM %s = tmpVar%d;\n", ast->declaration_assignment.iden, exp1);
-
-		} else {
-			print("PARAM %s = ", ast->declaration_assignment.iden);
-			exp1 = genCode(ast->declaration_assignment.value);
-			print(";\n");
-		}
-		return 0;
-		break;
 	case ARGUMENTS_NODE:
 		//print("#ARGUMENTS_COMMA_NODE %d\n", kind);
 
@@ -958,25 +923,19 @@ int genCode(node *ast) {
 		print(", ");
 		exp2 = genCode(ast->arguments.expression);
 		return 0;
-		break;
 
 	case EXPRESSION_VARIABLE_NODE:
 		//printf("ARGUMENTS_EXPRESSION_NODE %d\n", kind);
 		return genCode(ast->expression_variable);
-		break;
+
 	case UNKNOWN:
 		errorOccurred = 1; 
 		fprintf(errorFile,"UNKNOW ERROR! NUCLEAR MELTDOWN IN 5. 4. 3. 2. 1. 0.!\n",ast->line_num);
 		return ERROR;
-		break;
-	          
 	default:
 		errorOccurred = 1; 
 		fprintf(errorFile,"ENCRYPTING HARDDRIVE! PLEASE PAY 1 Million $ to Nigerian Prince to get files back.\n",ast->line_num);
 		return ERROR;
-		break;
-	
-
 	}
 
 	return 0; // failed checks

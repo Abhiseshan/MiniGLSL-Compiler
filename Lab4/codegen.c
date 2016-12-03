@@ -201,7 +201,7 @@ int genCode(node *ast) {
 	int type;
 	int depth;
 	int tmp;
-	int right_exp, left_exp;
+	int exp1, exp2;
 	char * name;
 	int index;
 	kind = ast->kind;
@@ -214,48 +214,69 @@ int genCode(node *ast) {
 		scopeCount++;
 		//printf("ENTER_SCOPE_NODE %d\n", kind);
 
-		right_exp = genCode(ast->enter_scope.scope);
+		exp1 = genCode(ast->enter_scope);
 		scopeCount--;
-		return right_exp;
+		return exp1;
 		break;
 	case SCOPE_NODE:
 		//printf("SCOPE_NODE %d\n", kind);
-		right_exp = genCode(ast->scope.declarations);
-		left_exp = genCode(ast->scope.statements);
+		if (ast->scope.declarations)
+            exp1 = genCode(ast->scope.declarations);
+        else 
+            exp1 = 1;
+        if(ast->scope.statements) 
+            exp2 = genCode(ast->scope.statements);
+        else
+            exp2 = 1;
 
-		if (right_exp == -1 || left_exp == -1)
-			return -1;
+		if(exp1==ERROR || exp2 == ERROR)
+            return ERROR;
 
 		return 0;
 		break;
+
 	case DECLARATIONS_NODE:
 		//printf("DECLARATIONS_NODE %d\n", kind);
-		right_exp = genCode(ast->declarations.declarations);
-		left_exp = genCode(ast->declarations.declaration);
+		if(ast->declarations.declarations)
+            exp1 = genCode(ast->declarations.declarations);
+        else 
+            exp1 = 1;
 
-		if (right_exp == -1 || left_exp == -1)
-			return -1;
+        exp2 = genCode(ast->declarations.declaration);
 
-		return left_exp;
+		if(exp1==ERROR || exp2 == ERROR)
+            return ERROR;
+
+		return exp2;
 		break;
+
 	case STATEMENTS_NODE:
 		//printf("STATEMENTS_NODE %d\n", kind);
-		right_exp = genCode(ast->statements.statements);
-		left_exp = genCode(ast->statements.statement);
+		if (ast->statements.statements)
+            exp1 = genCode(ast->statements.statements);
+        else
+            exp1 = 1;
+        if(ast->statements.statement)
+            exp2 = genCode(ast->statements.statement);
+        else
+            exp2 = 1;
+                
+		if(exp1==ERROR || exp2 == ERROR)
+			return ERROR;
 
-		if (right_exp == -1 || left_exp == -1)
-			return -1;
-
-		return left_exp;
+		return exp2;
 		break;
+		
 	case 5:
 		//printf("EXPRESSION_NODE No node %d\n", kind);
 		// No EXPRESSION_NODE
 		break;
+
 	case NESTED_EXPRESSION_NODE:
 		//printf("PREN_EXPRESSION_NODE %d\n", kind);
-		return genCode(ast->paren_exp.expression);
+		return genCode(ast->nested_expression);
 		break;
+
 	case UNARY_EXPRESION_NODE:
 		//printf("UNARY_EXPRESION_NODE %d\n", kind);
 		//printf("Operator: %d\n", ast->unary_expr.op);
@@ -263,14 +284,14 @@ int genCode(node *ast) {
 		print("TEMP tmpVar%d;\n", val);
 
 		if (inPreEval(ast->unary_expr.right->kind)) {
-			right_exp = genCode(ast->unary_expr.right);
+			exp1 = genCode(ast->unary_expr.right);
 			switch (ast->unary_expr.op) {
 			case MINUS:
-				print("MUL tmpVar%d, tmpVar%d, -1.0;\n", val, right_exp);
+				print("MUL tmpVar%d, tmpVar%d, ERROR.0;\n", val, exp1);
 				return val;
 				break;
 			case NOT:
-				print("NOT tmpVar%d, tmpVar%d;\n", val, right_exp);
+				print("NOT tmpVar%d, tmpVar%d;\n", val, exp1);
 				return val;
 				break;
 			}
@@ -279,13 +300,13 @@ int genCode(node *ast) {
 			switch (ast->unary_expr.op) {
 			case MINUS:
 				print("MUL tmpVar%d, ", val);
-				right_exp = genCode(ast->unary_expr.right);
-				print(" , -1.0;\n");
+				exp1 = genCode(ast->unary_expr.right);
+				print(" , ERROR.0;\n");
 				return val;
 				break;
 			case NOT:
 				print("NOT tmpVar%d, ");
-				right_exp = genCode(ast->unary_expr.right);
+				exp1 = genCode(ast->unary_expr.right);
 				print(";\n", val);
 				return val;
 				break;
@@ -298,8 +319,8 @@ int genCode(node *ast) {
 		//printf("Operator: %d\n", ast->binary_expr.op);
 
 		int t1, t2, t3, t4, t5, t6;
-		left_exp = 0;
-		right_exp = 0;
+		exp2 = 0;
+		exp1 = 0;
 		val = tmpCount++;
 		if (val > maxTmpCount) {
 			print("TEMP tmpVar%d;\n", val);
@@ -307,28 +328,28 @@ int genCode(node *ast) {
 		}
 
 		if (inPreEval(ast->binary_expr.left->kind)) {
-			left_exp = genCode(ast->binary_expr.left);
+			exp2 = genCode(ast->binary_expr.left);
 		}
 
 		if (inPreEval(ast->binary_expr.right->kind)) {
-			right_exp = genCode(ast->binary_expr.right);
+			exp1 = genCode(ast->binary_expr.right);
 		}
 
 		if (ast->binary_expr.op == AND_OP) {
 			print("ADD ");
 			//
 			print("tmpVar%d, ", val);
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(",");
 
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(";\n", val);
 			print("SUB tmpVar%d, tmpVar%d, 1.0;\n", val, val);
@@ -338,25 +359,25 @@ int genCode(node *ast) {
 				maxTmpCount++;
 			}
 
-			print("CMP tmpVar%d, tmpVar%d, -1.0, 1.0;\n", val, val-1);
-			print("MOV tmpVar%d, tmpVar%d;\n", val-1, val);
+			print("CMP tmpVar%d, tmpVar%d, ERROR.0, 1.0;\n", val, valERROR);
+			print("MOV tmpVar%d, tmpVar%d;\n", valERROR, val);
 			tmpCount--;
 			return val - 1;
 		} else if (ast->binary_expr.op == OR_OP) {
 			print("ADD ");
 			//
 			print("tmpVar%d, ", val);
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(",");
 
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(";\n", val);
 			print("ADD tmpVar%d, tmpVar%d, 1.0;\n", val, val);
@@ -365,8 +386,8 @@ int genCode(node *ast) {
 				print("TEMP tmpVar%d;\n", val);
 				maxTmpCount++;
 			}
-			print("CMP tmpVar%d, tmpVar%d, -1.0, 1.0;\n", val, val-1);
-			print("MOV tmpVar%d, tmpVar%d;\n", val-1, val);
+			print("CMP tmpVar%d, tmpVar%d, ERROR.0, 1.0;\n", val, valERROR);
+			print("MOV tmpVar%d, tmpVar%d;\n", valERROR, val);
 			tmpCount--;
 			return val - 1;
 		} else if (ast->binary_expr.op == LT_OP) {
@@ -375,17 +396,17 @@ int genCode(node *ast) {
 			print("SGE ");
 			//
 			print("tmpVar%d, ", val);
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(",");
 
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(";\n", val);
 			t1 = val;
@@ -396,36 +417,36 @@ int genCode(node *ast) {
 			}
 
 			print("SGE tmpVar%d,", t2);
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(",");
 
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(";\n", val);
 
 			print("ADD tmpVar%d, tmpVar%d, tmpVar%d;\n", t2, t2, t1);
 			print("SUB tmpVar%d, tmpVar%d, 2.0;\n", t2, t2);
-			print("CMP tmpVar%d, tmpVar%d, -1.0, 1.0;\n", t1, t2);
+			print("CMP tmpVar%d, tmpVar%d, ERROR.0, 1.0;\n", t1, t2);
 			t3 = t2 + 1;
 			print("SUB tmpVar%d,", t2);
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(",");
 
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(";\n", val);
 			if (t3 > maxTmpCount) {
@@ -435,24 +456,24 @@ int genCode(node *ast) {
 			print("SLT tmpVar%d, tmpVar%d, 0.0;\n", t3, t2);
 			print("ADD tmpVar%d, tmpVar%d, tmpVar%d;\n", t3, t3, t1);
 			print("SUB tmpVar%d, tmpVar%d,1.0;\n", t3, t3);
-			print("CMP tmpVar%d, tmpVar%d, -1.0, 1.0;\n", t1, t3);
+			print("CMP tmpVar%d, tmpVar%d, ERROR.0, 1.0;\n", t1, t3);
 			tmpCount = t1 + 1;
 			return t1;
 		} else if (ast->binary_expr.op == GT_OP) {
 			print("SGE ");
 			//
 			print("tmpVar%d, ", val);
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(",");
 
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(";\n", val);
 			t1 = val;
@@ -464,17 +485,17 @@ int genCode(node *ast) {
 			}
 
 			print("SGE tmpVar%d,", t2);
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(",");
 
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(";\n", val);
 
@@ -488,22 +509,22 @@ int genCode(node *ast) {
 				maxTmpCount++;
 			}
 			print("SGE tmpVar%d,", t3);
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(",");
 
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(";\n", val);
 
 			print("SUB tmpVar%d, tmpVar%d, 2.0;\n",t3,t3);
-			print("CMP tmpVar%d, tmpVar%d, -1.0,1.0;\n", t1,t3);
+			print("CMP tmpVar%d, tmpVar%d, ERROR.0,1.0;\n", t1,t3);
 			tmpCount = t1 + 1;
 			return t1;
 
@@ -515,17 +536,17 @@ int genCode(node *ast) {
 			print("SGE ");
 			//
 			print("tmpVar%d, ", val);
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(",");
 
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(";\n", val);
 			t1 = val;
@@ -536,40 +557,40 @@ int genCode(node *ast) {
 			}
 
 			print("SGE tmpVar%d,", t2);
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(",");
 
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(";\n", val);
 
 			print("ADD tmpVar%d, tmpVar%d, tmpVar%d;\n", t2, t2, t1);
 			print("SUB tmpVar%d, tmpVar%d, 2.0;\n", t2, t2);
-			print("CMP tmpVar%d, tmpVar%d, -1.0, 1.0;\n", t1, t2);
+			print("CMP tmpVar%d, tmpVar%d, ERROR.0, 1.0;\n", t1, t2);
 			tmpCount = t1 + 1;
 			return t1;
 		} else if (ast->binary_expr.op == NEQ_OP) {
 			print("SGE ");
 			//
 			print("tmpVar%d, ", val);
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(",");
 
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(";\n", val);
 			t1 = val;
@@ -581,23 +602,23 @@ int genCode(node *ast) {
 			}
 
 			print("SGE tmpVar%d,", t2);
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(",");
 
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(";\n", val);
 
 			print("ADD tmpVar%d, tmpVar%d, tmpVar%d;\n", t2, t2, t1);
 			print("SUB tmpVar%d, tmpVar%d, 2.0;\n", t2, t2);
-			print("CMP tmpVar%d, tmpVar%d, 1.0, -1.0;\n", t1, t2);
+			print("CMP tmpVar%d, tmpVar%d, 1.0, ERROR.0;\n", t1, t2);
 			tmpCount = t1 + 1;
 			return t1;
 
@@ -611,18 +632,18 @@ int genCode(node *ast) {
 			print("RCP ");
 			//
 			print("tmpVar%d, ", val);
-			if (right_exp == 0) {
-				right_exp = genCode(ast->binary_expr.right);
+			if (exp1 == 0) {
+				exp1 = genCode(ast->binary_expr.right);
 			} else {
-				print("tmpVar%d ", right_exp);
+				print("tmpVar%d ", exp1);
 			}
 			print(";\n", val);
 
 			print("MUL tmpVar%d,", val);
-			if (left_exp == 0) {
-				left_exp = genCode(ast->binary_expr.left);
+			if (exp2 == 0) {
+				exp2 = genCode(ast->binary_expr.left);
 			} else {
-				print("tmpVar%d ", left_exp);
+				print("tmpVar%d ", exp2);
 			}
 			print(",");
 			print("tmpVar%d;\n", val);
@@ -634,23 +655,23 @@ int genCode(node *ast) {
 		}
 
 		print("tmpVar%d, ", val);
-		if (left_exp == 0) {
-			left_exp = genCode(ast->binary_expr.left);
+		if (exp2 == 0) {
+			exp2 = genCode(ast->binary_expr.left);
 		} else {
-			print("tmpVar%d ", left_exp);
+			print("tmpVar%d ", exp2);
 		}
 		print(",");
 
-		if (right_exp == 0) {
-			right_exp = genCode(ast->binary_expr.right);
+		if (exp1 == 0) {
+			exp1 = genCode(ast->binary_expr.right);
 		} else {
-			print("tmpVar%d ", right_exp);
+			print("tmpVar%d ", exp1);
 		}
 
-		//if (right_exp == 0 || left_exp == 0) {
+		//if (exp1 == 0 || exp2 == 0) {
 		print(";\n", val);
 		//} else {
-		//	print("tmpVar%d , tmpVar%d, tmpVar%d;\n", left_exp, right_exp, tmpCount);
+		//	print("tmpVar%d , tmpVar%d, tmpVar%d;\n", exp2, exp1, tmpCount);
 		//}
 
 		return val;
@@ -679,8 +700,8 @@ int genCode(node *ast) {
 			//print("MOV tmpVar%d, %f;\n", tmpCount, 1.0);
 			print("1.0");
 		} else if (ast->bool_literal.right == 0) {
-			//print("MOV tmpVar%d, %f;\n", tmpCount, -1.0);
-			print("-1.0");
+			//print("MOV tmpVar%d, %f;\n", tmpCount, ERROR.0);
+			print("ERROR.0");
 		}
 		//val = tmpCount++;
 		//return val;
@@ -703,8 +724,8 @@ int genCode(node *ast) {
 		break;
 	case FUNCTION_NODE:
 		//printf("FUNCTION_NODE %d\n", kind);
-		if (type == -1)
-			return -1;
+		if (type == ERROR)
+			return ERROR;
 		//type = genCode(ast->function_exp.arguments);
 
 		val = tmpCount++;
@@ -730,12 +751,12 @@ int genCode(node *ast) {
 		break;
 	case CONSTRUCTOR_NODE:
 		//printf("CONSTRUCTOR_NODE %d\n", kind);
-		left_exp = genCode(ast->constructor_exp.type);
+		exp2 = genCode(ast->constructor_exp.type);
 
 		//val = tmpCount++;
 		//print("TEMP tmpVar%d = {", val);
 		print("{", val);
-		right_exp = genCode(ast->constructor_exp.arguments);
+		exp1 = genCode(ast->constructor_exp.arguments);
 		print("}");
 
 		return 0;
@@ -751,8 +772,8 @@ int genCode(node *ast) {
 		print("TEMP condVar%d;\n", val);
 
 		if (inPreEval(ast->if_else_statement.condition->kind)) {
-			left_exp = genCode(ast->if_else_statement.condition);
-			print("MOV condVar%d, tmpVar%d;\n", val, left_exp);
+			exp2 = genCode(ast->if_else_statement.condition);
+			print("MOV condVar%d, tmpVar%d;\n", val, exp2);
 		} else {
 			print("MOV condVar%d, ", val);
 			genCode(ast->if_else_statement.condition);
@@ -763,7 +784,7 @@ int genCode(node *ast) {
 
 		if_state = IN_ELSE;
 		s_push(ifStack, &ifStackTop, if_state);
-		right_exp = genCode(ast->if_else_statement.else_statement);
+		exp1 = genCode(ast->if_else_statement.else_statement);
 		s_pop(ifStack, &ifStackTop);
 
 		print("#then\n");
@@ -785,8 +806,8 @@ int genCode(node *ast) {
 		val = ++condCount;
 		print("TEMP condVar%d;\n", val);
 		if (inPreEval(ast->if_else_statement.condition->kind)) {
-			left_exp = genCode(ast->if_else_statement.condition);
-			print("MOV condVar%d, tmpVar%d;\n", val, left_exp);
+			exp2 = genCode(ast->if_else_statement.condition);
+			print("MOV condVar%d, tmpVar%d;\n", val, exp2);
 		} else {
 			print("MOV condVar%d, ", val);
 			genCode(ast->if_else_statement.condition);
@@ -811,62 +832,62 @@ int genCode(node *ast) {
 		if (if_state == IN_THEN) {
 
 			if (inPreEval(ast->assignment.right->kind)) {
-				right_exp = genCode(ast->assignment.right);
+				exp1 = genCode(ast->assignment.right);
 				print("CMP ");
-				left_exp = genCode(ast->assignment.left);
+				exp2 = genCode(ast->assignment.left);
 				print(", ");
 				print("condVar%d ,", condCount);
-				left_exp = genCode(ast->assignment.left);
-				print(", tmpVar%d", right_exp);
+				exp2 = genCode(ast->assignment.left);
+				print(", tmpVar%d", exp1);
 				print(";\n");
 			} else {
 				print("CMP ");
-				left_exp = genCode(ast->assignment.left);
+				exp2 = genCode(ast->assignment.left);
 				print(", ");
 				print("condVar%d ,", condCount);
-				left_exp = genCode(ast->assignment.left);
+				exp2 = genCode(ast->assignment.left);
 				print(", ");
-				right_exp = genCode(ast->assignment.right);
+				exp1 = genCode(ast->assignment.right);
 				print(";\n");
 			}
 
 		} else if (if_state == IN_ELSE) {
 
 			if (inPreEval(ast->assignment.right->kind)) {
-				right_exp = genCode(ast->assignment.right);
+				exp1 = genCode(ast->assignment.right);
 				print("CMP ");
-				left_exp = genCode(ast->assignment.left);
+				exp2 = genCode(ast->assignment.left);
 				print(", ");
 				print("condVar%d ,", condCount);
-				print("tmpVar%d ,", right_exp);
-				left_exp = genCode(ast->assignment.left);
+				print("tmpVar%d ,", exp1);
+				exp2 = genCode(ast->assignment.left);
 				//double
 				print(";\n");
 			} else {
 				print("CMP ");
-				left_exp = genCode(ast->assignment.left);
+				exp2 = genCode(ast->assignment.left);
 				print(", ");
 				print("condVar%d ,", condCount);
-				right_exp = genCode(ast->assignment.right);
+				exp1 = genCode(ast->assignment.right);
 				print(", ");
-				left_exp = genCode(ast->assignment.left);
+				exp2 = genCode(ast->assignment.left);
 				print(";\n");
 			}
 
 		} else {
 
 			if (inPreEval(ast->assignment.right->kind)) {
-				right_exp = genCode(ast->assignment.right);
+				exp1 = genCode(ast->assignment.right);
 				print("MOV ");
-				left_exp = genCode(ast->assignment.left);
+				exp2 = genCode(ast->assignment.left);
 				print(", ");
-				print("tmpVar%d", right_exp);
+				print("tmpVar%d", exp1);
 				print(";\n");
 			} else {
 				print("MOV ");
-				left_exp = genCode(ast->assignment.left);
+				exp2 = genCode(ast->assignment.left);
 				print(", ");
-				right_exp = genCode(ast->assignment.right);
+				exp1 = genCode(ast->assignment.right);
 				print(";\n");
 			}
 		}
@@ -889,18 +910,18 @@ int genCode(node *ast) {
 		break;
 	case 24:
 		//printf("DECLARATION_ASSIGNMENT_NODE %d\n", kind);
-		left_exp = genCode(ast->declaration_assignment.type);
+		exp2 = genCode(ast->declaration_assignment.type);
 		if_state = s_peak(ifStack,&ifStackTop);
 
 		if (if_state == IN_THEN) {
 			if (inPreEval(ast->declaration_assignment.value->kind)) {
-				right_exp = genCode(ast->declaration_assignment.value);
+				exp1 = genCode(ast->declaration_assignment.value);
 				print("TEMP %s;\n", ast->declaration_assignment.iden);
 				print("CMP ");
 				print("%s ,", ast->declaration_assignment.iden);
 				print("condVar%d ,", condCount);
 				print("%s ,", ast->declaration_assignment.iden);
-				print("tmpVar%d ;\n", right_exp);
+				print("tmpVar%d ;\n", exp1);
 
 			} else {
 				print("TEMP %s;\n", ast->declaration_assignment.iden);
@@ -908,17 +929,17 @@ int genCode(node *ast) {
 				print("%s ,", ast->declaration_assignment.iden);
 				print("condVar%d ,", condCount);
 				print(" %s ,", ast->declaration_assignment.iden);
-				right_exp = genCode(ast->declaration_assignment.value);
+				exp1 = genCode(ast->declaration_assignment.value);
 				print(";\n");
 			}
 		} else if (if_state == IN_ELSE) {
 			if (inPreEval(ast->declaration_assignment.value->kind)) {
-				right_exp = genCode(ast->declaration_assignment.value);
+				exp1 = genCode(ast->declaration_assignment.value);
 				print("TEMP %s;\n", ast->declaration_assignment.iden);
 				print("CMP ");
 				print("%s ,", ast->declaration_assignment.iden);
 				print("condVar%d ,", condCount);
-				print("tmpVar%d ,", right_exp);
+				print("tmpVar%d ,", exp1);
 				print("%s;\n", ast->declaration_assignment.iden);
 
 			} else {
@@ -926,7 +947,7 @@ int genCode(node *ast) {
 				print("CMP ");
 				print("%s ,", ast->declaration_assignment.iden);
 				print("condVar%d ,", condCount);
-				right_exp = genCode(ast->declaration_assignment.value);
+				exp1 = genCode(ast->declaration_assignment.value);
 				print(", %s", ast->declaration_assignment.iden);
 				print(";\n");
 			}
@@ -934,14 +955,14 @@ int genCode(node *ast) {
 		} else {
 
 			if (inPreEval(ast->declaration_assignment.value->kind)) {
-				right_exp = genCode(ast->declaration_assignment.value);
+				exp1 = genCode(ast->declaration_assignment.value);
 				print("TEMP %s;\n", ast->declaration_assignment.iden);
 				print(
-						"MOV %s, tmpVar%d;\n", ast->declaration_assignment.iden, right_exp);
+						"MOV %s, tmpVar%d;\n", ast->declaration_assignment.iden, exp1);
 			} else {
 				print("TEMP %s;\n", ast->declaration_assignment.iden);
 				print("MOV %s, ", ast->declaration_assignment.iden);
-				right_exp = genCode(ast->declaration_assignment.value);
+				exp1 = genCode(ast->declaration_assignment.value);
 				print(";\n");
 			}
 		}
@@ -951,15 +972,15 @@ int genCode(node *ast) {
 	case 25:
 		//printf("CONST_DECLARATION_ASSIGNMENT_NODE %d\n", kind);
 
-		left_exp = genCode(ast->const_declaration_assignment.type);
+		exp2 = genCode(ast->const_declaration_assignment.type);
 		if (inPreEval(ast->declaration_assignment.value->kind)) {
-			right_exp = genCode(ast->declaration_assignment.value);
+			exp1 = genCode(ast->declaration_assignment.value);
 			print(
-					"PARAM %s = tmpVar%d;\n", ast->declaration_assignment.iden, right_exp);
+					"PARAM %s = tmpVar%d;\n", ast->declaration_assignment.iden, exp1);
 
 		} else {
 			print("PARAM %s = ", ast->declaration_assignment.iden);
-			right_exp = genCode(ast->declaration_assignment.value);
+			exp1 = genCode(ast->declaration_assignment.value);
 			print(";\n");
 		}
 		return 0;
@@ -967,9 +988,9 @@ int genCode(node *ast) {
 	case ARGUMENTS_NODE:
 		//print("#ARGUMENTS_COMMA_NODE %d\n", kind);
 
-		right_exp = genCode(ast->arguments_comma.arguments);
+		exp1 = genCode(ast->arguments_comma.arguments);
 		print(", ");
-		left_exp = genCode(ast->arguments_comma.expression);
+		exp2 = genCode(ast->arguments_comma.expression);
 
 		return 0;
 
@@ -980,7 +1001,7 @@ int genCode(node *ast) {
 		break;
 	default:
 		printf("DEFAULT!!\n");
-		return -1;
+		return ERROR;
 		break;
 
 	}

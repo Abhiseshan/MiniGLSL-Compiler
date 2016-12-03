@@ -229,7 +229,61 @@ int genCode(node *ast) {
 		if(exp1==-1 || exp2 == -1)
             return -1;
 
-		return 0;
+		return 0;exp2 = genCode(ast->declaration_assignment.type);
+		if_state = s_peak(ifStack,&ifStackTop);
+
+		if (if_state == IN_THEN) {
+			if (isTempRes(ast->declaration_assignment.value->kind)) {
+				exp1 = genCode(ast->declaration_assignment.value);
+				print("TEMP %s;\n", ast->declaration_assignment.iden);
+				print("CMP ");
+				print("%s ,", ast->declaration_assignment.iden);
+				print("condVar%d ,", condCount);
+				print("%s ,", ast->declaration_assignment.iden);
+				print("tmpVar%d ;\n", exp1);
+
+			} else {
+				print("TEMP %s;\n", ast->declaration_assignment.iden);
+				print("CMP ");
+				print("%s ,", ast->declaration_assignment.iden);
+				print("condVar%d ,", condCount);
+				print(" %s ,", ast->declaration_assignment.iden);
+				exp1 = genCode(ast->declaration_assignment.value);
+				print(";\n");
+			}
+		} else if (if_state == IN_ELSE) {
+			if (isTempRes(ast->declaration_assignment.value->kind)) {
+				exp1 = genCode(ast->declaration_assignment.value);
+				print("TEMP %s;\n", ast->declaration_assignment.iden);
+				print("CMP ");
+				print("%s ,", ast->declaration_assignment.iden);
+				print("condVar%d ,", condCount);
+				print("tmpVar%d ,", exp1);
+				print("%s;\n", ast->declaration_assignment.iden);
+
+			} else {
+				print("TEMP %s;\n", ast->declaration_assignment.iden);
+				print("CMP ");
+				print("%s ,", ast->declaration_assignment.iden);
+				print("condVar%d ,", condCount);
+				exp1 = genCode(ast->declaration_assignment.value);
+				print(", %s", ast->declaration_assignment.iden);
+				print(";\n");
+			}
+
+		} else {
+
+			if (isTempRes(ast->declaration_assignment.value->kind)) {
+				exp1 = genCode(ast->declaration_assignment.value);
+				print("TEMP %s;\n", ast->declaration_assignment.iden);
+				print("MOV %s, tmpVar%d;\n", ast->declaration_assignment.iden, exp1);
+			} else {
+				print("TEMP %s;\n", ast->declaration_assignment.iden);
+				print("MOV %s, ", ast->declaration_assignment.iden);
+				exp1 = genCode(ast->declaration_assignment.value);
+				print(";\n");
+			}
+		}
 
 	case DECLARATIONS_NODE:
 		//printf("DECLARATIONS_NODE %d\n", kind);

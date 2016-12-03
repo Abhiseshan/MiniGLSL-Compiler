@@ -210,7 +210,7 @@ int genCode(node *ast) {
 
 
 	switch (kind) {
-	case 1:
+	case ENTER_SCOPE_NODE:
 		scopeCount++;
 		//printf("ENTER_SCOPE_NODE %d\n", kind);
 
@@ -218,7 +218,7 @@ int genCode(node *ast) {
 		scopeCount--;
 		return right_exp;
 		break;
-	case 2:
+	case SCOPE_NODE:
 		//printf("SCOPE_NODE %d\n", kind);
 		right_exp = genCode(ast->scope.declarations);
 		left_exp = genCode(ast->scope.statements);
@@ -228,7 +228,7 @@ int genCode(node *ast) {
 
 		return 0;
 		break;
-	case 3:
+	case DECLARATIONS_NODE:
 		//printf("DECLARATIONS_NODE %d\n", kind);
 		right_exp = genCode(ast->declarations.declarations);
 		left_exp = genCode(ast->declarations.declaration);
@@ -238,7 +238,7 @@ int genCode(node *ast) {
 
 		return left_exp;
 		break;
-	case 4:
+	case STATEMENTS_NODE:
 		//printf("STATEMENTS_NODE %d\n", kind);
 		right_exp = genCode(ast->statements.statements);
 		left_exp = genCode(ast->statements.statement);
@@ -252,11 +252,11 @@ int genCode(node *ast) {
 		//printf("EXPRESSION_NODE No node %d\n", kind);
 		// No EXPRESSION_NODE
 		break;
-	case 6:
+	case NESTED_EXPRESSION_NODE:
 		//printf("PREN_EXPRESSION_NODE %d\n", kind);
 		return genCode(ast->paren_exp.expression);
 		break;
-	case 7:
+	case UNARY_EXPRESION_NODE:
 		//printf("UNARY_EXPRESION_NODE %d\n", kind);
 		//printf("Operator: %d\n", ast->unary_expr.op);
 		val = tmpCount++;
@@ -293,7 +293,7 @@ int genCode(node *ast) {
 		}
 
 		break;
-	case 8:
+	case BINARY_EXPRESSION_NODE:
 		//printf("BINARY_EXPRESSION_NODE %d\n", kind);
 		//printf("Operator: %d\n", ast->binary_expr.op);
 
@@ -655,7 +655,7 @@ int genCode(node *ast) {
 
 		return val;
 		break;
-	case 9:
+	case INT_NODE:
 		//printf("INT_NODE %d\n", kind);
 		//printf("Integer: %d\n",ast->int_literal.right);
 		//print("MOV tmpVar%d, %d.0;\n", tmpCount, ast->int_literal.right);
@@ -663,7 +663,7 @@ int genCode(node *ast) {
 		print("%d.0", ast->int_literal.right);
 		return 0;
 		break;
-	case 10:
+	case FLOAT_NODE:
 		//printf("FLOAT_NODE %d\n", kind);
 		//printf("Float: %f", ast->float_literal.right);
 		//print("MOV tmpVar%d, %d;\n", tmpCount, ast->float_literal.right);
@@ -672,7 +672,7 @@ int genCode(node *ast) {
 		print("%f", ast->float_literal.right);
 		return 0;
 		break;
-	case 11:
+	case BOOL_NODE:
 		//printf("BOOL_NODE %d\n", kind);
 		//printf("Bool: %d", ast->bool_literal.right);
 		if (ast->bool_literal.right == 1) {
@@ -690,18 +690,18 @@ int genCode(node *ast) {
 		//printf("IDENT_NODE No node %d\n", kind);
 		// No IDENT_NODE
 		break;
-	case 13:
+	case VARIABLE_NODE:
 		//print("VAR_NODE %d\n", kind);
 		return printVar(ast);
 		return 0;
 
 		break;
-	case 14:
+	case ARRAY_INDEX_NODE:
 		//print("ARRAY_NODE %d\n",kind);
 		return printArray(ast);
 		//return 0;
 		break;
-	case 15:
+	case FUNCTION_NODE:
 		//printf("FUNCTION_NODE %d\n", kind);
 		if (type == -1)
 			return -1;
@@ -728,7 +728,7 @@ int genCode(node *ast) {
 		return val;
 
 		break;
-	case 16:
+	case CONSTRUCTOR_NODE:
 		//printf("CONSTRUCTOR_NODE %d\n", kind);
 		left_exp = genCode(ast->constructor_exp.type);
 
@@ -741,11 +741,11 @@ int genCode(node *ast) {
 		return 0;
 
 		break;
-	case 17:
+	case TYPE_NODE:
 		//printf("TYPE_NODE %d\n", kind);
 		return 0; //ast->type.type_name;
 		break;
-	case 18:
+	case IF_STATEMENT_NODE:
 		//printf("#IF_ELSE_STATEMENT_NODE %d\n", kind);
 		val = ++condCount;
 		print("TEMP condVar%d;\n", val);
@@ -803,7 +803,7 @@ int genCode(node *ast) {
 		//printf("WHILE_STATEMENT_NODE No node %d\n", kind);
 		//No WHILE_STATEMENT_NODE
 		break;
-	case 21:
+	case ASSIGNMENT_NODE:
 		//print("#ASSIGNMENT_NODE %d\n", kind);
 
 		if_state = s_peak(ifStack,&ifStackTop);
@@ -874,10 +874,12 @@ int genCode(node *ast) {
 		return 0;
 
 		break;
-	case 22:
+	case NESTED_SCOPE_NODE:
 		//printf("NESTED_SCOPE_NODE No node for %d\n", kind);
 		// No NESTED_SCOPE_NODE
 		break;
+
+	//DECLARATION_NODE? 
 	case 23:
 		//printf("DECLARATION_NODE %d\n", kind);
 		//print("#Declaration \n");
@@ -962,7 +964,7 @@ int genCode(node *ast) {
 		}
 		return 0;
 		break;
-	case 26:
+	case ARGUMENTS_NODE:
 		//print("#ARGUMENTS_COMMA_NODE %d\n", kind);
 
 		right_exp = genCode(ast->arguments_comma.arguments);
@@ -972,7 +974,7 @@ int genCode(node *ast) {
 		return 0;
 
 		break;
-	case 27:
+	case EXPRESSION_VARIABLE_NODE:
 		//printf("ARGUMENTS_EXPRESSION_NODE %d\n", kind);
 		return genCode(ast->arguments_expression.expression);
 		break;

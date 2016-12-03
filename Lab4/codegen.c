@@ -1,10 +1,7 @@
+#include "codegen.h"
+
 #define print(...) fprintf(fragFile,__VA_ARGS__)
 
-#include "codegen.h"
-#include "stack.h"
-
-#include "linked_list.h"
-#include "semantic.h"
 static int scopeCount;
 int tmpCount = 1;
 int prmCount = 1;

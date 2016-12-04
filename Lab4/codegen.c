@@ -908,13 +908,9 @@ int genCode(node *ast) {
 	case ARGUMENTS_NODE:
 		//print("#ARGUMENTS_COMMA_NODE %d\n", kind);
 
-		if (ast->arguments.args)
-			exp1 = genCode(ast->arguments.args);
-
-		if (ast->arguments.args != NULL && ast->arguments.expression)
-			print(", ");
+		exp1 = genCode(ast->arguments.args);
+		print(", ");
 		exp2 = genCode(ast->arguments.expression);
-
 		return 0;
 
 	case EXPRESSION_VARIABLE_NODE:

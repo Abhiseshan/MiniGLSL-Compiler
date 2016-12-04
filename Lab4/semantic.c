@@ -10,13 +10,13 @@ int semantic_check( node *ast) {
 int isInIf=0;
 
 int checkPredefined(char* name) {
-	if (!strcmp(name, "gl_FragColor") || !strcmp(name, "gl_FragDepth") || !strcmp(name, "gl_FragCoord") || !strcmp(name, "gl_TexCoord") || !strcmp(name, " gl_Color")  || 
-		!strcmp(name, "gl_Secondary") || !strcmp(name, "gl_FogFragCoord") || !strcmp(name, "gl_Light_Half") || !strcmp(name, " gl_Light_Ambient") || 
+	if (!strcmp(name, "gl_FragColor") || !strcmp(name, "gl_FragDepth") || !strcmp(name, "gl_FragCoord") || !strcmp(name, "gl_TexCoord") || !strcmp(name, "gl_Color")  || 
+		!strcmp(name, "gl_Secondary") || !strcmp(name, "gl_FogFragCoord") || !strcmp(name, "gl_Light_Half") || !strcmp(name, "gl_Light_Ambient") || 
 		!strcmp(name, "gl_Material_Shininess") || !strcmp(name, "env1") || !strcmp(name, "env2") || !strcmp(name, "env3"))
                 
-		return ERROR;
+		return 1;
 
-	return 1;
+	return 0;
 }
 
 bool isAttribute(char* name){
@@ -35,8 +35,20 @@ bool isUniform(char* name){
 bool isResult(char* name){
 	if (!strcmp(name, "gl_FragColor") || !strcmp(name, "gl_FragDepth") || !strcmp(name, "gl_FragCoord"))
 		return true;
+
 	return false;
 }
+
+int getPredefType (char* name) {
+	if (!strcmp(name, "gl_FragColor") || !strcmp(name, "gl_FragCoord") || !strcmp(name, "gl_TexCoord") || !strcmp(name, "gl_Color")  || 
+		!strcmp(name, "gl_Secondary") || !strcmp(name, "gl_FogFragCoord") || !strcmp(name, "gl_Light_Half") || !strcmp(name, "gl_Light_Ambient") || 
+		!strcmp(name, "gl_Material_Shininess") || !strcmp(name, "env1") || !strcmp(name, "env2") || !strcmp(name, "env3"))
+		return VEC4;
+	else
+		return BOOL;
+}
+
+
 
 int getBaseForTypeCode(int type_code) {
 	if (type_code < 4)
@@ -340,7 +352,7 @@ int semantic_check(node *ast) {
 					errorOccurred = 1; 
 					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
-				}else if(exp2!=exp1){
+				} else if(exp2!=exp1){
 					errorOccurred = 1; 
 					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
 					return ERROR;
@@ -365,9 +377,17 @@ int semantic_check(node *ast) {
 					errorOccurred = 1;
 					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, found BOOL, expecting INT or FLOAT\n",ast->line_num);						
 					return ERROR;
-				}else if(exp2==exp1){
+				} else if (exp1 == FLOAT && (exp2 == VEC2 || exp2 == VEC3 || exp2 == VEC4))
 					return exp2;
-				}else if(exp2!=exp1){
+				else if (exp2 == FLOAT && (exp1 == VEC2 || exp1 == VEC3 || exp1 == VEC4))
+					return exp1;
+				else if (exp1 == INT && (exp2 == IVEC2 || exp2 == IVEC3 || exp2 == IVEC4))
+					return exp2;
+				else if (exp2 == INT && (exp1 == IVEC2 || exp1 == IVEC3 || exp1 == IVEC4))
+					return exp1;
+				else if(exp2==exp1)
+					return exp2;
+				else if(exp2!=exp1){
 					errorOccurred = 1; 
 					fprintf(errorFile,"Line: %d: error: TYPE MISMATCH, expecting operands of same type on both sides\n",ast->line_num);						
 					return ERROR;
@@ -411,9 +431,12 @@ int semantic_check(node *ast) {
 			break;
                         
 		case VARIABLE_NODE:
+			if(checkPredefined(ast->variable.id))
+				return getPredefType (ast->variable.id);
+
             entry = symbol_find(ast->variable.id);
             
-            if (!entry) {
+            if (!entry ) {
 				errorOccurred = 1; 
 				fprintf(errorFile,"Line: %d: error: UNDEFINED VARIABLE, %s not defined in scope before it is used.\n",ast->line_num, ast->variable.id);						
                 return ERROR;
@@ -427,6 +450,11 @@ int semantic_check(node *ast) {
 			break;
 
 		case ARRAY_INDEX_NODE:
+
+			if(checkPredefined(ast->array_index.id))
+				return getBaseForTypeCode(getPredefType (ast->array_index.id));
+
+
             entry = symbol_find(ast->array_index.id);
             if (!entry) {
 				errorOccurred = 1; 
@@ -476,6 +504,7 @@ int semantic_check(node *ast) {
                     return ERROR;
 			}
 
+			return getBaseForTypeCode(ast->array_index.type);
 			break;
 
 		case FUNCTION_NODE:
@@ -512,7 +541,7 @@ int semantic_check(node *ast) {
                     fprintf(errorFile,"Line: %d error: expecting vec4 to function lit, got %s",ast->line_num, getTypeString(type));
                     return ERROR;
                 }
-                return FLOAT;
+                return VEC4;
 			}
 
 			errorOccurred = 1; 
@@ -607,7 +636,6 @@ int semantic_check(node *ast) {
 				}
 			} else if(exp2 == FLOAT || exp2==VEC2 || exp2==VEC3 || exp2==VEC4){
 				if(exp1==FLOAT){
-					//fprintf(errorFile,"CONS EXP1: %d: \nEXP2: %d:\n",exp1, exp2);								
 					return exp2;
 				}
 			} else {
@@ -643,12 +671,15 @@ int semantic_check(node *ast) {
                         
 		case ASSIGNMENT_NODE:
 			var = ast->assignment.var;
+
+
             if(var->kind == VARIABLE_NODE)
-                name = var->variable.id;
-            else
+			    name = var->variable.id;
+            else 
                 name = var->array_index.id;
 
             entry = symbol_find(name);
+
             if(isAttribute(name) || isUniform(name)){
 				errorOccurred = 1; 
 				fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, trying to write to a read-only variable\n",ast->line_num);
@@ -660,15 +691,26 @@ int semantic_check(node *ast) {
                 fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, trying to write to a Uniform Pre-Defined variable inside an if/else statement\n",ast->line_num);
 				return ERROR;
             }
-            
-            if(entry == NULL) {
+
+            if(entry == NULL && !checkPredefined(name)) {
                 errorOccurred = 1; 
                 fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, variable %s not defined\n", ast->line_num, name);
                 return ERROR;
             }
-            exp2 = entry->type_code;
-            ast->assignment.type = (type_code) entry->type_code;
-                          
+
+			if (checkPredefined(name) && var->kind == VARIABLE_NODE){
+				exp2 = getPredefType(name);
+			} else if (checkPredefined(name)) {
+				exp2 = getBaseForTypeCode(getPredefType(name));
+			} else if(var->kind == VARIABLE_NODE) {
+	            exp2 = entry->type_code;
+	            ast->assignment.type = (type_code) entry->type_code;            
+			}
+            else {
+	            exp2 = entry->vec;
+	            ast->assignment.type = (type_code) entry->vec;            
+			}
+
 			exp1 = semantic_check(ast->assignment.expression);
 
 			if(exp1==ERROR || exp2 == ERROR)
@@ -676,34 +718,33 @@ int semantic_check(node *ast) {
 
 			var = ast->assignment.expression;
 
-                        
-            if (entry->is_const) {
+            if (!checkPredefined(name) && entry->is_const) {
 				errorOccurred = 1; 
 				fprintf(errorFile,"Line: %d: error: cannot assign a value to a constant variable.\n",ast->line_num);
 				return ERROR;
 			}
-                        
+ 
             if(exp2!=exp1){
 				errorOccurred = 1; 
 				fprintf(errorFile,"Line: %d: error: TYPE MISMATCH\n",ast->line_num);
 				return ERROR;
 			}
-                        
+
+            if (!checkPredefined(name))  
+		        entry->is_init = 1;
+			
 			if (var->kind == VARIABLE_NODE)
 				name = var->variable.id;
 			else if (var->kind == ARRAY_INDEX_NODE)
-				name = var->array_index.id;	
-            else
-                return exp2;
-			
+				name = var->array_index.id;
+			else
+				return exp2;
+
 			if(isResult(name)){
 				errorOccurred = 1; 
 				fprintf(errorFile,"Line: %d: error: INVALID ASSIGNMENT, trying to read from a write-only variable\n",ast->line_num);
 				return ERROR;
 			}
-                        
-	        entry = symbol_find(name);
-	        entry->is_init = 1;
 
 			return exp2;
 			break;
@@ -715,8 +756,8 @@ int semantic_check(node *ast) {
 		case DECLARATION_NODE:
 			isDecl = symbol_exists_in_this_scope(ast->declaration.id);
 
-			if (checkPredefined(ast->declaration.id) == ERROR) {
-				errorOccurred = 1; 
+			if (checkPredefined(ast->declaration.id)) {
+				errorOccurred = 1;
 				fprintf(errorFile,"line: %d: error: Cannot declare Pre-defined variables\n", ast->line_num);
 				return ERROR;
 			}

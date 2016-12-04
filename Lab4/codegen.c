@@ -40,13 +40,7 @@ char toChar(int n) {
 }
 
 int printVar(node *ast) {
-	char *name;
-	int type, index;
-
-	name = ast->array_exp.identifier;
-	type = getType(name);
-
-	index = ast->array_exp.index;
+	char *name = ast->variable.id;
 
 	if (strcmp(name, "gl_FragColor") == 0) {
 		print("result.color");
@@ -108,13 +102,8 @@ int printVar(node *ast) {
 }
 
 int printArray(node *ast) {
-	char *name;
-	int type, index;
-
-	name = ast->array_exp.identifier;
-	type = getType(name);
-
-	index = ast->array_exp.index;
+	char *name = ast->array_index.id;
+	int index = ast->array_index.index;
 
 	if (strcmp(name, "gl_FragColor") == 0) {
 		print("result.color.%c", toChar(index));
@@ -229,61 +218,7 @@ int genCode(node *ast) {
 		if(exp1==-1 || exp2 == -1)
             return -1;
 
-		return 0;exp2 = genCode(ast->declaration_assignment.type);
-		if_state = s_peak(ifStack,&ifStackTop);
-
-		if (if_state == IN_THEN) {
-			if (isTempRes(ast->declaration_assignment.value->kind)) {
-				exp1 = genCode(ast->declaration_assignment.value);
-				print("TEMP %s;\n", ast->declaration_assignment.iden);
-				print("CMP ");
-				print("%s ,", ast->declaration_assignment.iden);
-				print("condVar%d ,", condCount);
-				print("%s ,", ast->declaration_assignment.iden);
-				print("tmpVar%d ;\n", exp1);
-
-			} else {
-				print("TEMP %s;\n", ast->declaration_assignment.iden);
-				print("CMP ");
-				print("%s ,", ast->declaration_assignment.iden);
-				print("condVar%d ,", condCount);
-				print(" %s ,", ast->declaration_assignment.iden);
-				exp1 = genCode(ast->declaration_assignment.value);
-				print(";\n");
-			}
-		} else if (if_state == IN_ELSE) {
-			if (isTempRes(ast->declaration_assignment.value->kind)) {
-				exp1 = genCode(ast->declaration_assignment.value);
-				print("TEMP %s;\n", ast->declaration_assignment.iden);
-				print("CMP ");
-				print("%s ,", ast->declaration_assignment.iden);
-				print("condVar%d ,", condCount);
-				print("tmpVar%d ,", exp1);
-				print("%s;\n", ast->declaration_assignment.iden);
-
-			} else {
-				print("TEMP %s;\n", ast->declaration_assignment.iden);
-				print("CMP ");
-				print("%s ,", ast->declaration_assignment.iden);
-				print("condVar%d ,", condCount);
-				exp1 = genCode(ast->declaration_assignment.value);
-				print(", %s", ast->declaration_assignment.iden);
-				print(";\n");
-			}
-
-		} else {
-
-			if (isTempRes(ast->declaration_assignment.value->kind)) {
-				exp1 = genCode(ast->declaration_assignment.value);
-				print("TEMP %s;\n", ast->declaration_assignment.iden);
-				print("MOV %s, tmpVar%d;\n", ast->declaration_assignment.iden, exp1);
-			} else {
-				print("TEMP %s;\n", ast->declaration_assignment.iden);
-				print("MOV %s, ", ast->declaration_assignment.iden);
-				exp1 = genCode(ast->declaration_assignment.value);
-				print(";\n");
-			}
-		}
+		return 0;
 
 	case DECLARATIONS_NODE:
 		//printf("DECLARATIONS_NODE %d\n", kind);
@@ -328,21 +263,21 @@ int genCode(node *ast) {
 		if (isTempRes(ast->unary.right->kind)) {
 			exp1 = genCode(ast->unary.right);
 			switch (ast->unary.op) {
-				case MINUS:
+				case MINUS_OP:
 					print("SUB tmpVar%d, 0.0, tmpVar%d;\n", val, exp1);
 					return val;
-				case NOT:
+				case NOT_OP:
 					print("NOT tmpVar%d, tmpVar%d;\n", val, exp1);
 					return val;
 			}
 		} else {
 			switch (ast->unary.op) {
-				case MINUS:
+				case MINUS_OP:
 					print("MUL tmpVar%d, ", val);
 					exp1 = genCode(ast->unary.right);
 					print(" , -1.0;\n");
 					return val;
-				case NOT:
+				case NOT_OP:
 					print("NOT tmpVar%d, ");
 					exp1 = genCode(ast->unary.right);
 					print(";\n", val);
@@ -364,11 +299,11 @@ int genCode(node *ast) {
 		}
 
 		if (isTempRes(ast->binary.left->kind)) {
-			exp2 = genCode(ast->binary_expr.left);
+			exp2 = genCode(ast->binary.left);
 		}
 
 		if (isTempRes(ast->binary.right->kind)) {
-			exp1 = genCode(ast->binary_expr.right);
+			exp1 = genCode(ast->binary.right);
 		}
 
 		if (ast->binary.op == AND_OP) {
@@ -731,10 +666,10 @@ int genCode(node *ast) {
 	case BOOL_NODE:
 		//printf("BOOL_NODE %d\n", kind);
 		//printf("Bool: %d", ast->bool_literal.right);
-		if (ast->boot_val == 1) {
+		if (ast->bool_val == 1) {
 			//print("MOV tmpVar%d, %f;\n", tmpCount, 1.0);
 			print("1.0");
-		} else if (ast->boot_val == 0) {
+		} else if (ast->bool_val == 0) {
 			//print("MOV tmpVar%d, %f;\n", tmpCount, -1.0);
 			print("-1.0");
 		}
@@ -901,69 +836,69 @@ int genCode(node *ast) {
 			print("TEMP %s;\n", ast->declaration.id);
 		}
 		else if(ast->declaration.is_const) {	// Constant value declaration
-			exp2 = genCode(ast->const_declaration_assignment.type);
-			if (isTempRes(ast->declaration_assignment.value->kind)) {
-				exp1 = genCode(ast->declaration_assignment.value);
-				print("PARAM %s = tmpVar%d;\n", ast->declaration_assignment.iden, exp1);
+			exp2 = genCode(ast->declaration.type);
+			if (isTempRes(ast->declaration.expression->kind)) {
+				exp1 = genCode(ast->declaration.expression);
+				print("PARAM %s = tmpVar%d;\n", ast->declaration.id, exp1);
 
 			} else {
-				print("PARAM %s = ", ast->declaration_assignment.iden);
-				exp1 = genCode(ast->declaration_assignment.value);
+				print("PARAM %s = ", ast->declaration.id);
+				exp1 = genCode(ast->declaration.expression);
 				print(";\n");
 			}
 		}	
 		else {
-			exp2 = genCode(ast->declaration_assignment.type);
+			exp2 = genCode(ast->declaration.type);
 			if_state = s_peak(ifStack,&ifStackTop);
 
 			if (if_state == IN_THEN) {
-				if (isTempRes(ast->declaration_assignment.value->kind)) {
-					exp1 = genCode(ast->declaration_assignment.value);
-					print("TEMP %s;\n", ast->declaration_assignment.iden);
+				if (isTempRes(ast->declaration.expression->kind)) {
+					exp1 = genCode(ast->declaration.expression);
+					print("TEMP %s;\n", ast->declaration.id);
 					print("CMP ");
-					print("%s ,", ast->declaration_assignment.iden);
+					print("%s ,", ast->declaration.id);
 					print("condVar%d ,", condCount);
-					print("%s ,", ast->declaration_assignment.iden);
+					print("%s ,", ast->declaration.id);
 					print("tmpVar%d ;\n", exp1);
 
 				} else {
-					print("TEMP %s;\n", ast->declaration_assignment.iden);
+					print("TEMP %s;\n", ast->declaration.id);
 					print("CMP ");
-					print("%s ,", ast->declaration_assignment.iden);
+					print("%s ,", ast->declaration.id);
 					print("condVar%d ,", condCount);
-					print(" %s ,", ast->declaration_assignment.iden);
-					exp1 = genCode(ast->declaration_assignment.value);
+					print(" %s ,", ast->declaration.id);
+					exp1 = genCode(ast->declaration.expression);
 					print(";\n");
 				}
 			} else if (if_state == IN_ELSE) {
-				if (isTempRes(ast->declaration_assignment.value->kind)) {
-					exp1 = genCode(ast->declaration_assignment.value);
-					print("TEMP %s;\n", ast->declaration_assignment.iden);
+				if (isTempRes(ast->declaration.expression->kind)) {
+					exp1 = genCode(ast->declaration.expression);
+					print("TEMP %s;\n", ast->declaration.id);
 					print("CMP ");
-					print("%s ,", ast->declaration_assignment.iden);
+					print("%s ,", ast->declaration.id);
 					print("condVar%d ,", condCount);
 					print("tmpVar%d ,", exp1);
-					print("%s;\n", ast->declaration_assignment.iden);
+					print("%s;\n", ast->declaration.id);
 
 				} else {
-					print("TEMP %s;\n", ast->declaration_assignment.iden);
+					print("TEMP %s;\n", ast->declaration.id);
 					print("CMP ");
-					print("%s ,", ast->declaration_assignment.iden);
+					print("%s ,", ast->declaration.id);
 					print("condVar%d ,", condCount);
-					exp1 = genCode(ast->declaration_assignment.value);
-					print(", %s", ast->declaration_assignment.iden);
+					exp1 = genCode(ast->declaration.expression);
+					print(", %s", ast->declaration.id);
 					print(";\n");
 				}
 			} else {
 
-				if (isTempRes(ast->declaration_assignment.value->kind)) {
-					exp1 = genCode(ast->declaration_assignment.value);
-					print("TEMP %s;\n", ast->declaration_assignment.iden);
-					print("MOV %s, tmpVar%d;\n", ast->declaration_assignment.iden, exp1);
+				if (isTempRes(ast->declaration.expression->kind)) {
+					exp1 = genCode(ast->declaration.expression);
+					print("TEMP %s;\n", ast->declaration.id);
+					print("MOV %s, tmpVar%d;\n", ast->declaration.id, exp1);
 				} else {
-					print("TEMP %s;\n", ast->declaration_assignment.iden);
-					print("MOV %s, ", ast->declaration_assignment.iden);
-					exp1 = genCode(ast->declaration_assignment.value);
+					print("TEMP %s;\n", ast->declaration.id);
+					print("MOV %s, ", ast->declaration.id);
+					exp1 = genCode(ast->declaration.expression);
 					print(";\n");
 				}
 			}

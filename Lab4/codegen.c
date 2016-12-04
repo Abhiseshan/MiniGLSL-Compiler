@@ -36,6 +36,8 @@ char toChar(int n) {
 		return 'z';
 	case 3:
 		return 'w';
+	default:
+		return '0';
 	}
 }
 
@@ -187,13 +189,8 @@ int genCode(node *ast) {
 
 	int kind;
 	int type;
-	int depth;
-	int tmp;
 	int exp1, exp2;
-	char * name;
-	int index;
 	kind = ast->kind;
-	int isDecl = 0;
 	int val;
 
 
@@ -289,7 +286,7 @@ int genCode(node *ast) {
 		//printf("BINARY_EXPRESSION_NODE %d\n", kind);
 		//printf("Operator: %d\n", ast->binary_expr.op);
 
-		int t1, t2, t3, t4, t5, t6;
+		int t1, t2, t3;
 		exp2 = 0;
 		exp1 = 0;
 		val = tmpCount++;
